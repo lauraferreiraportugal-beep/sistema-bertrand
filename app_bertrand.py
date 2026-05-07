@@ -7,42 +7,17 @@ st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout=
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
-    
-    /* BARRA LATERAL AZUL - PRESERVADA */
     [data-testid="stSidebar"] { background-color: #002e5d; color: white; }
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] { color: white !important; font-size: 1.8em; }
     [data-testid="stSidebar"] div[data-testid="stMetricLabel"] { color: #d1d1d1 !important; }
-    
-    /* TÍTULO */
     h1 { color: #002e5d !important; font-family: 'Georgia', serif; text-align: center; margin-top: 20px; }
-
-    /* CHATBOX NO MEIO */
-    div[data-testid="stChatInput"] {
-        position: relative !important;
-        bottom: auto !important;
-        margin-top: 100px !important; 
-        margin-bottom: 30px !important;
-    }
-
-    /* RODAPÉ NO FIM */
-    .custom-footer {
-        position: fixed;
-        left: 0; bottom: 0; width: 100%;
-        text-align: center; padding: 10px;
-        background-color: white; border-top: 1px solid #e0e0e0;
-        color: #1e1e1e; z-index: 999;
-    }
-
-    /* MÉTRICAS DE RESULTADOS */
-    div[data-testid="stMetric"] { 
-        background-color: #f8f9fa; border-left: 5px solid #002e5d; 
-        padding: 15px; border-radius: 5px; 
-    }
+    div[data-testid="stChatInput"] { position: relative !important; bottom: auto !important; margin-top: 50px !important; margin-bottom: 30px !important; }
+    .custom-footer { position: fixed; left: 0; bottom: 0; width: 100%; text-align: center; padding: 10px; background-color: white; border-top: 1px solid #e0e0e0; color: #1e1e1e; z-index: 999; }
+    div[data-testid="stMetric"] { background-color: #f8f9fa; border-left: 5px solid #002e5d; padding: 15px; border-radius: 5px; }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
-    # Base de Dados (O cérebro do programa)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -75,51 +50,51 @@ def main():
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # O CHATBOX
-    p = st.chat_input("Pergunte-me qualquer coisa sobre os livros...")
+    p = st.chat_input("Pergunte sobre tiragens, páginas ou autores...")
 
     if p:
         with st.chat_message("user"):
             st.write(p)
         
         pergunta = p.lower()
-        numeros = [int(s) for s in pergunta.split() if s.isdigit()]
+        numeros = [int(s) for s in pergunta.replace('.', '').replace(',', '').split() if s.isdigit()]
         num = numeros[0] if numeros else None
         
         with st.chat_message("assistant"):
             respondido = False
             
-            # --- LÓGICA DE TIRAGENS (Somas) ---
-            if "tiragem" in pergunta and ("total" in pergunta or "todos" in pergunta):
-                filtro = next((v for v in ["saramago", "pessoa", "ficção", "romance"] if v in pergunta), None)
-                if filtro:
-                    total_f = sum(d['tiragem'] for t, d in livros.items() if filtro in d['autor'].lower() or filtro in d['género'].lower())
-                    st.write(f"A tiragem total para essa categoria é de **{total_f:,} exemplares**.")
+            # --- 1. LÓGICA MATEMÁTICA PARA TIRAGEM (CORREÇÃO CRÍTICA) ---
+            if "tiragem" in pergunta and num:
+                if "inferior" in pergunta or "menos" in pergunta or "abaixo" in pergunta:
+                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] <= num]
+                    msg = f"Livros com tiragem até {num:,}:"
                 else:
-                    st.write(f"A tiragem total de todo o catálogo é de **{sum(d['tiragem'] for d in livros.values()):,} exemplares**.")
+                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] >= num]
+                    msg = f"Livros com tiragem acima de {num:,}:"
+                
+                st.write(f"### {msg}")
+                for t, d in resultados:
+                    st.write(f"📖 **{t}** — Tiragem: {d['tiragem']:,}")
                 respondido = True
 
-            # --- LÓGICA DE FILTROS NUMÉRICOS (Páginas/Anos) ---
-            elif num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
-                op = (lambda x: x > num) if ("mais" in pergunta or "maior" in pergunta) else (lambda x: x < num)
-                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if op(d['páginas'])]
-                st.write(f"Livros encontrados:")
+            # --- 2. FILTROS DE PÁGINAS ---
+            elif ("págin" in pergunta or "pp" in pergunta) and num:
+                cond = (lambda x: x >= num) if "mais" in pergunta or "maior" in pergunta else (lambda x: x <= num)
+                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if cond(d['páginas'])]
+                st.write("Resultados encontrados:")
                 for r in res: st.write(r)
                 respondido = True
 
-            # --- LÓGICA DE PESQUISA UNIVERSAL (A que responde a quase tudo) ---
+            # --- 3. PESQUISA UNIVERSAL (PARA TUDO O RESTO) ---
             if not respondido:
-                resultados = []
+                found = []
                 for t, d in livros.items():
-                    # O programa cria uma "super-frase" com tudo o que sabe sobre o livro
-                    conhecimento_total = f"{t} {d['autor']} {d['género']} {d['ano']} {d['tiragem']}".lower()
-                    
-                    # Se a tua pergunta tiver palavras que existem nessa super-frase...
-                    if fuzz.partial_ratio(pergunta, conhecimento_total) > 80 or any(word in conhecimento_total for word in pergunta.split() if len(word) > 3):
-                        resultados.append((t, d))
+                    texto_livro = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
+                    if fuzz.partial_ratio(pergunta, texto_livro) > 85 or pergunta in texto_livro:
+                        found.append((t, d))
                 
-                if resultados:
-                    for t, d in resultados:
+                if found:
+                    for t, d in found:
                         st.write(f"### {t}")
                         c1, c2, c3 = st.columns(3)
                         c1.metric("Autor", d['autor'])
@@ -130,15 +105,9 @@ def main():
                     respondido = True
 
             if not respondido:
-                st.warning("Não encontrei informações sobre isso. Tente ser mais específico (ex: Autor, Género ou Número de páginas).")
+                st.warning("Não encontrei resultados exatos. Tente mudar os termos da pesquisa.")
 
-    # RODAPÉ
-    st.markdown("""
-        <div class="custom-footer">
-            © 2024 Bertrand Editora | Inteligência Editorial<br>
-            <span style="color: #888; font-size: 0.85em;">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("""<div class="custom-footer">© 2024 Bertrand Editora | Inteligência Editorial<br><span style="color: #888; font-size: 0.85em;">Assistente Inteligente de Gestão Editorial - Análise Completa.</span></div>""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
