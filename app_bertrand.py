@@ -1,6 +1,5 @@
 import streamlit as st
 from thefuzz import fuzz
-from collections import Counter
 
 # 1. Configuração e Estilo Bertrand
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="centered")
@@ -9,7 +8,7 @@ st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* BARRA LATERAL AZUL - PRESERVADA COM TUDO */
+    /* BARRA LATERAL AZUL - PRESERVADA */
     [data-testid="stSidebar"] { 
         background-color: #002e5d; 
         color: white; 
@@ -31,12 +30,12 @@ st.markdown("""
         margin-top: 20px;
     }
 
-    /* POSICIONAMENTO CENTRALIZADO DO CHATBOX */
+    /* POSICIONAMENTO MEIO-TERMO (Ajustado para o teu desenho) */
     div[data-testid="stChatInput"] {
         position: relative !important;
         bottom: auto !important;
-        /* AJUSTE DE ALTURA: 200px empurra o chat para o meio da página */
-        margin-top: 200px !important; 
+        /* 100px é o meio-termo ideal entre o topo e o fundo */
+        margin-top: 100px !important; 
         margin-bottom: 50px !important;
     }
 
@@ -93,7 +92,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Tudo preservado e calculado)
+    # Sidebar (Preservada)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -105,7 +104,7 @@ def main():
     # TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # CHATBOX
+    # CHATBOX - POSIÇÃO MEIO-TERMO
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -118,13 +117,7 @@ def main():
         respondido = False
 
         with st.chat_message("assistant"):
-            if num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
-                cond = (lambda x: x > num) if "mais" in pergunta or "maior" in pergunta else (lambda x: x < num)
-                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if cond(d['páginas'])]
-                st.write(f"Resultados para páginas ({num}):")
-                for r in res: st.write(r)
-                respondido = True
-
+            # Lógica de resposta (Universal)
             if not respondido:
                 resultados = []
                 for t, d in livros.items():
