@@ -18,7 +18,7 @@ st.markdown("""
     [data-testid="stMetricValue"] {
         white-space: normal !important;
         word-break: break-word !important;
-        font-size: 1.2em !important; /* Diminuímos ligeiramente o tamanho para caber melhor */
+        font-size: 1.2em !important;
     }
     
     div[data-testid="stMetric"] { background-color: #f8f9fa; border-left: 5px solid #002e5d; padding: 15px; border-radius: 5px; }
@@ -49,12 +49,18 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
+    # BARRA LATERAL ATUALIZADA
     with st.sidebar:
-        st.markdown("### 📊 Visão Geral")
-        st.metric("Títulos no Sistema", len(livros))
-        st.metric("Total Tiragem", f"{sum(d['tiragem'] for d in livros.values()):,}")
+        st.markdown("# Projeto Estágio")
         st.markdown("---")
-        st.write("📌 **Projeto de Estágio**")
+        st.markdown("""
+        **Funcionalidades:**
+        - 🔍 Busca inteligente por Autor e Género.
+        - 📈 Consulta de Tiragens individuais.
+        - 📏 Filtros de Páginas (maior/menor).
+        - 📅 Filtros de Ano de Publicação.
+        - 📋 Listagem completa de catálogo.
+        """)
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
