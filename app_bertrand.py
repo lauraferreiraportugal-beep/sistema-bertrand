@@ -1,27 +1,40 @@
 import streamlit as st
 from collections import Counter
-from thefuzz import fuzz, process
+from thefuzz import fuzz
 
-# 1. Configuração
-st.set_page_config(page_title="Bertrand Editorial AI", page_icon="🧠", layout="wide")
+# 1. Configuração da Página (Mantido)
+st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="wide")
 
-# 2. Estilo
+# 2. Estilo Visual Bertrand (Mantido)
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     [data-testid="stSidebar"] { background-color: #002e5d; color: white; }
+    div[data-testid="stMetric"] {
+        background-color: #f8f9fa;
+        border-left: 5px solid #002e5d;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    h1, h2, h3 { color: #002e5d !important; font-family: 'Georgia', serif; }
     .stChatMessage { border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px; }
-    h1 { color: #002e5d; font-family: 'Georgia', serif; }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
+    # Barra Lateral com Logo (Mantido)
     try:
         st.sidebar.image("logo.png", width=200)
     except:
         st.sidebar.title("Bertrand")
+    
+    st.sidebar.markdown("---")
+    st.sidebar.write("📌 **Projeto de Estágio**")
+    st.sidebar.info("Assistente Inteligente para consulta de catálogo e apoio à decisão.")
 
-    # Base de Dados
+    st.title("SISTEMA DE GESTÃO EDITORIAL")
+    
+    # Base de Dados Completa (Mantido)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -45,10 +58,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    st.title("🧠 Bertrand Editorial Intelligence")
-    st.markdown("##### Assistente Flexível (Pode escrever com erros!)")
-
-    pergunta = st.chat_input("Como posso ajudar?")
+    pergunta = st.chat_input("Como posso ajudar o departamento hoje?")
 
     if pergunta:
         with st.chat_message("user"):
@@ -57,43 +67,65 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # Lógica de similaridade para palavras-chave
-            score_paginas = fuzz.partial_ratio(p, "páginas")
-            score_autor = fuzz.partial_ratio(p, "autor")
-            score_tiragem = fuzz.partial_ratio(p, "tiragem")
+            # Lógica de Similaridade (A nova funcionalidade de entender erros)
+            score_pag = fuzz.partial_ratio(p, "páginas")
+            score_tir = fuzz.partial_ratio(p, "tiragem")
+            score_res = fuzz.partial_ratio(p, "resumo")
+            score_aut_top = fuzz.partial_ratio(p, "mais livros")
 
-            # 1. Filtro de Páginas Inteligente
-            if score_paginas > 70 and ("menos" in p or "abaixo" in p or "ate" in p):
+            # 1. Filtro de Páginas (Entende 'pajinas', 'pagna', etc.)
+            if score_pag > 70 and ("menos" in p or "abaixo" in p or "ate" in p):
                 try:
                     num = int(''.join(filter(str.isdigit, p)))
-                    res = [f"📖 **{t}** ({d['páginas']} pág.)" for t, d in livros.items() if d['páginas'] < num]
-                    st.write(f"Encontrei estes títulos até {num} páginas:")
-                    for r in res: st.write(r)
-                except: st.write("Indica o número de páginas.")
+                    res = [t for t, d in livros.items() if d['páginas'] < num]
+                    st.write(f"Livros com menos de {num} páginas:")
+                    for r in res: st.write(f"📖 **{r}** ({livros[r]['páginas']} pp.)")
+                except: st.write("Indique o número de páginas.")
 
-            # 2. Ranking Inteligente
-            elif score_autor > 70 and ("mais" in p or "top" in p):
+            # 2. Tiragem e Médias (Nova funcionalidade mantida)
+            elif score_tir > 70:
+                autor = next((d['autor'] for d in livros.values() if fuzz.partial_ratio(p, d['autor'].lower()) > 85), None)
+                genero = next((d['género'] for d in livros.values() if fuzz.partial_ratio(p, d['género'].lower()) > 85), None)
+                
+                if autor:
+                    tirs = [d['tiragem'] for d in livros.values() if d['autor'] == autor]
+                    media = sum(tirs)/len(tirs)
+                    st.metric(f"Média de Tiragem: {autor}", f"{int(media):,} ex.")
+                elif genero:
+                    tirs = [d['tiragem'] for d in livros.values() if d['género'] == genero]
+                    st.metric(f"Média de Tiragem: {genero}", f"{int(sum(tirs)/len(tirs)):,} ex.")
+                else: st.write("Sobre qual autor ou género deseja saber a tiragem?")
+
+            # 3. Quem tem mais livros (Nova funcionalidade mantida)
+            elif score_aut_top > 70:
                 contagem = Counter([d['autor'] for d in livros.values()])
                 autor_top, qtd = contagem.most_common(1)[0]
-                st.write(f"O autor com mais títulos é **{autor_top}**.")
+                st.write(f"O autor com maior volume no catálogo é **{autor_top}** com **{qtd} títulos**.")
 
-            # 3. Pesquisa Global Flexível (Título, Autor ou Género)
+            # 4. Resumo do Catálogo (Mantido)
+            elif score_res > 70:
+                col1, col2 = st.columns(2)
+                col1.metric("Total Títulos", len(livros))
+                col2.metric("Tiragem Total", f"{sum(d['tiragem'] for d in livros.values()):,}")
+
+            # 5. Pesquisa Universal (Entende erros em nomes de livros/autores)
             else:
-                resultados = []
-                for titulo, info in livros.items():
-                    # Verifica se o que foi escrito é parecido com o título, autor ou género
-                    s1 = fuzz.partial_ratio(p, titulo.lower())
-                    s2 = fuzz.partial_ratio(p, info['autor'].lower())
-                    s3 = fuzz.partial_ratio(p, info['género'].lower())
-                    
-                    if s1 > 80 or s2 > 80 or s3 > 80:
-                        resultados.append(f"📖 **{titulo}** | {info['autor']} | {info['género']}")
+                achou = False
+                for t, d in livros.items():
+                    if fuzz.partial_ratio(p, t.lower()) > 85 or fuzz.partial_ratio(p, d['autor'].lower()) > 85:
+                        st.write(f"### {t}")
+                        m1, m2, m3 = st.columns(3)
+                        m1.metric("Páginas", d['páginas'])
+                        m2.metric("Ano", d['ano'])
+                        m3.metric("Tiragem", f"{d['tiragem']:,}")
+                        st.write(f"**🖋️ Autor:** {d['autor']} | **📚 Género:** {d['género']}")
+                        achou = True
+                        break # Mostra o mais provável
                 
-                if resultados:
-                    st.write("Acho que procuras por isto:")
-                    for r in list(set(resultados)): st.write(r)
-                else:
-                    st.write("Não percebi bem. Podes tentar escrever de outra forma?")
+                if not achou:
+                    st.write("Não encontrei dados exatos. Tente perguntar por 'tiragem de Saramago' ou 'livros com menos de 200 páginas'.")
+
+    st.markdown("<br><hr><center>© 2024 Bertrand Editora | Gestão Inteligente</center>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
