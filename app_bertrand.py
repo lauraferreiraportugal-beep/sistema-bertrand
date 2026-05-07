@@ -1,28 +1,21 @@
 import streamlit as st
 
-# 1. Configuração da Página com a identidade Bertrand
+# 1. Configuração da Página
 st.set_page_config(page_title="Portal Editorial Bertrand", page_icon="📖", layout="wide")
 
-# 2. CSS Personalizado com a paleta de cores da Bertrand (Azul Marinho e Branco)
+# 2. CSS Personalizado - Identidade Visual Bertrand
 st.markdown("""
     <style>
-    /* Fundo geral mais limpo */
     .stApp {
         background-color: #ffffff;
     }
-    
-    /* Barra lateral em Azul Marinho Bertrand */
     [data-testid="stSidebar"] {
         background-color: #002e5d;
         color: white;
     }
-    
-    /* Ajuste de cores de texto na barra lateral */
     [data-testid="stSidebar"] .stMarkdown p {
         color: #f0f0f0;
     }
-    
-    /* Estilo dos cartões de métricas */
     div[data-testid="stMetric"] {
         background-color: #f8f9fa;
         border-left: 5px solid #002e5d;
@@ -30,35 +23,32 @@ st.markdown("""
         border-radius: 5px;
         box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
     }
-    
-    /* Títulos em Azul Marinho */
     h1, h2, h3 {
         color: #002e5d !important;
         font-family: 'Georgia', serif;
     }
-
-    /* Botões e elementos de destaque */
-    .stButton>button {
-        background-color: #002e5d;
-        color: white;
-        border-radius: 5px;
+    /* Estilo para centralizar a imagem na barra lateral */
+    [data-testid="stSidebar"] img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        padding-bottom: 20px;
     }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
-    # Barra Lateral
-    st.sidebar.markdown(f"<h2 style='color: white;'>Bertrand</h2>", unsafe_allow_html=True)
+    # Barra Lateral com Logótipo
+    st.sidebar.image("https://www.bertrand.pt/img/bertrand_logo.png", width=200)
     st.sidebar.markdown("---")
-    st.sidebar.write("🏷️ **Departamento de IT**")
-    st.sidebar.write("Controlo de Tiragens e Inventário Editorial.")
+    st.sidebar.write("📌 **Projeto de Estágio**")
+    st.sidebar.write("Consulta rápida de catálogo e métricas editoriais.")
     
     # Conteúdo Principal
     st.title("SISTEMA DE GESTÃO EDITORIAL")
-    st.markdown("#### :grey[Base de Dados Oficial de Publicações]")
-    st.write("")
+    st.write("") # Espaço em branco
 
-    # Base de Dados (A tua lista completa com acentos)
+    # Base de Dados completa
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": "50.000", "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": "15.000", "género": "Ficção"},
@@ -82,7 +72,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": "70.000", "género": "Ficção"}
     }
 
-    # Seleção de Livro com design limpo
+    # Menu de Seleção
     lista_ordenada = sorted(list(livros.keys()))
     escolha = st.selectbox("📖 Selecione um título para consulta técnica:", ["-- Pesquisar no Catálogo --"] + lista_ordenada)
 
@@ -91,7 +81,7 @@ def main():
         
         st.write(f"### {escolha}")
         
-        # Métricas com estilo Bertrand (Azul e Branco)
+        # Métricas (Páginas, Ano, Tiragem)
         m1, m2, m3 = st.columns(3)
         m1.metric("Páginas", f"{dados['páginas']} pp.")
         m2.metric("Publicação", dados['ano'])
@@ -99,7 +89,7 @@ def main():
 
         st.markdown("---")
         
-        # Informação detalhada
+        # Dados do autor e género
         c1, c2 = st.columns(2)
         with c1:
             st.markdown(f"**🖋️ Autor:** {dados['autor']}")
@@ -108,9 +98,9 @@ def main():
         
         st.success(f"Informação validada para a obra: {escolha}")
     else:
-        st.info("Utilize a caixa de seleção acima para verificar os dados de cada obra.")
+        st.info("Utilize a caixa de seleção acima para verificar os dados técnicos.")
 
-    # Rodapé Institucional
+    # Rodapé institucional
     st.write("<br><br>", unsafe_allow_html=True)
     st.divider()
     st.caption("© 2024 Bertrand Editora | Powered by IT Division")
