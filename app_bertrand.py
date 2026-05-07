@@ -11,8 +11,32 @@ st.markdown("""
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] { color: white !important; font-size: 1.8em; }
     [data-testid="stSidebar"] div[data-testid="stMetricLabel"] { color: #d1d1d1 !important; }
     h1 { color: #002e5d !important; font-family: 'Georgia', serif; text-align: center; margin-top: 20px; }
-    div[data-testid="stChatInput"] { position: relative !important; bottom: auto !important; margin-top: 50px !important; margin-bottom: 30px !important; }
-    .custom-footer { position: fixed; left: 0; bottom: 0; width: 100%; text-align: center; padding: 10px; background-color: white; border-top: 1px solid #e0e0e0; color: #1e1e1e; z-index: 999; }
+    
+    /* POSICIONAMENTO DO CHATBOX NO MEIO */
+    div[data-testid="stChatInput"] { 
+        position: relative !important; 
+        bottom: auto !important; 
+        margin-top: 50px !important; 
+        margin-bottom: 30px !important; 
+    }
+    
+    /* RODAPÉ CENTRADO NO FUNDO */
+    .custom-footer { 
+        position: fixed; 
+        left: 0; 
+        bottom: 0; 
+        width: 100%; 
+        text-align: center; 
+        padding: 15px 0; 
+        background-color: white; 
+        border-top: 1px solid #e0e0e0; 
+        color: #1e1e1e; 
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
     
     /* AJUSTE PARA O NOME DO AUTOR APARECER COMPLETO */
     [data-testid="stMetricValue"] {
@@ -49,7 +73,6 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # BARRA LATERAL ATUALIZADA
     with st.sidebar:
         st.markdown("# Projeto Estágio")
         st.markdown("---")
@@ -57,7 +80,7 @@ def main():
         **Funcionalidades:**
         - 🔍 Busca inteligente por Autor e Género.
         - 📈 Consulta de Tiragens individuais.
-        - 📖 Filtros de Páginas (maior/menor).
+        - 📏 Filtros de Páginas (maior/menor).
         - 📅 Filtros de Ano de Publicação.
         - 📋 Listagem completa de catálogo.
         """)
@@ -78,7 +101,6 @@ def main():
             resultados = livros.copy()
             filtros_ativos = []
 
-            # 1. Filtro de Autor
             for t, d in livros.items():
                 autor_n = d['autor'].lower()
                 if autor_n in pergunta or (autor_n.split()[-1] in pergunta and len(autor_n.split()[-1]) > 4):
@@ -86,7 +108,6 @@ def main():
                     filtros_ativos.append(f"Autor: {d['autor']}")
                     break
 
-            # 2. Filtro de Género
             generos = ["romance", "ficção", "biografia", "história", "clássico", "infantil", "thriller", "poesia"]
             for g in generos:
                 if g in pergunta:
@@ -94,7 +115,6 @@ def main():
                     filtros_ativos.append(f"Género: {g.title()}")
                     break
 
-            # 3. Filtros Matemáticos
             if num:
                 if "págin" in pergunta or "pp" in pergunta:
                     if "mais" in pergunta or "maior" in pergunta:
@@ -132,7 +152,13 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    st.markdown("""<div class="custom-footer">© 2026 Bertrand Editora | Inteligência Editorial<br><span style="color: #888; font-size: 0.85em;">Assistente Inteligente.</span></div>""", unsafe_allow_html=True)
+    # RODAPÉ CENTRADO
+    st.markdown("""
+        <div class="custom-footer">
+            <span>© 2026 Bertrand Editora | Inteligência Editorial</span>
+            <span style="color: #888; font-size: 0.85em; margin-top: 5px;">Assistente Inteligente.</span>
+        </div>
+        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
