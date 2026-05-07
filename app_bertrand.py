@@ -1,8 +1,3 @@
-Com certeza. Vamos ajustar o layout para que a interface fique mais equilibrada, com o chat focado no centro, e organizar o rodapé conforme pediste, utilizando cores contrastantes para a legenda.
-
-Aqui tens o código completo e atualizado:
-
-Python
 import streamlit as st
 from thefuzz import fuzz
 from collections import Counter
