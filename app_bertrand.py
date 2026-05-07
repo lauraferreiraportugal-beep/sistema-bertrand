@@ -104,3 +104,16 @@ def main():
         with c1:
             st.markdown(f"**🖋️ Autor:** {dados['autor']}")
         with c2:
+            st.markdown(f"**📚 Género Literário:** {dados['género']}")
+        
+        st.success(f"Informação validada para a obra: {escolha}")
+    else:
+        st.info("Utilize a caixa de seleção acima para verificar os dados de cada obra.")
+
+    # Rodapé Institucional
+    st.write("<br><br>", unsafe_allow_html=True)
+    st.divider()
+    st.caption("© 2024 Bertrand Editora | Powered by IT Division")
+
+if __name__ == "__main__":
+    main()
