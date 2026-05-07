@@ -76,7 +76,7 @@ def main():
             st.markdown(f"**📄 Número de Páginas:** {dados['paginas']}")
             st.markdown(f"**📈 Tiragem Registada:** {dados['tiragem']} exemplares")
 
-        st.success("Dados carregados com sucesso do catálogo Bertrand.")
+        st.success("Dados carregados com sucesso.")
 
 
 if __name__ == "__main__":
