@@ -122,7 +122,7 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    st.markdown("""<div class="custom-footer"><div>© 2026 Bertrand Editora | Inteligência Editorial</div><div style="color: #888; font-size: 0.75em; margin-top: 2px;">Assistente Inteligente.</div></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="custom-footer"><div>© 2026 Bertrand Editora </div><div style="color: #888; font-size: 0.75em; margin-top: 2px;">Assistente Inteligente.</div></div>""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
