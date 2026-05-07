@@ -15,13 +15,7 @@ st.markdown("""
         color: white; 
     }
     
-    /* Métricas na Barra Lateral */
-    [data-testid="stSidebar"] div[data-testid="stMetricValue"] {
-        color: white !important;
-        font-size: 1.5em;
-    }
-    
-    /* Estilo das Métricas Centrais */
+    /* Estilo das Métricas */
     div[data-testid="stMetric"] { 
         background-color: #f8f9fa; 
         border-left: 5px solid #002e5d; 
@@ -33,24 +27,30 @@ st.markdown("""
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-bottom: 0px;
+        margin-bottom: 30px;
     }
 
-    /* Estilo do cabeçalho de informações (antigo rodapé) */
-    .header-info {
+    /* Rodapé no fim da página */
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: white;
+        color: #1e1e1e;
         text-align: center;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e0e0e0;
-        margin-bottom: 20px;
+        padding: 10px;
+        border-top: 1px solid #e0e0e0;
+        z-index: 999;
     }
-    .header-light {
+    .footer-light {
         color: #888888;
         font-size: 0.85em;
     }
-
-    /* Ajuste para o Chat Input não ficar colado ao fundo e subir */
-    .stChatInput {
-        padding-bottom: 50px;
+    
+    /* Espaço para o conteúdo não ficar por baixo do footer */
+    .main-content {
+        padding-bottom: 100px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -87,23 +87,13 @@ def main():
         except:
             st.subheader("BERTRAND")
         st.markdown("### 📊 Visão Geral")
-        st.metric("Total de Títulos", len(livros))
-        st.metric("Tiragem Média", f"{int(sum(d['tiragem'] for d in livros.values())/len(livros)):,}")
-        st.markdown("---")
-        st.caption("Ficha Técnica Editorial")
+        st.metric("Títulos no Sistema", len(livros))
+        st.metric("Total Tiragem", f"{sum(d['tiragem'] for d in livros.values()):,}")
 
-    # Título Principal
+    # 1. TOPO: Título
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # --- INFORMAÇÕES DE COPYRIGHT E ASSISTENTE (AGORA NO TOPO) ---
-    st.markdown("""
-        <div class="header-info">
-            © 2024 Bertrand Editora | Inteligência Editorial<br>
-            <span class="header-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # --- CHATBOX (ST.CHAT_INPUT) ---
+    # 2. MEIO: Chatbox (Aparece logo abaixo do título)
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -152,8 +142,13 @@ def main():
                         st.divider()
                     respondido = True
 
-            if not respondido:
-                st.warning("Informação não localizada.")
+    # 3. FIM DA PÁGINA: Rodapé Fixo
+    st.markdown("""
+        <div class="footer">
+            © 2024 Bertrand Editora | Inteligência Editorial<br>
+            <span class="footer-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
+        </div>
+        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
