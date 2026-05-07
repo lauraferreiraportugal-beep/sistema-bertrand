@@ -27,24 +27,33 @@ st.markdown("""
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-bottom: 50px;
+        margin-top: 20px;
     }
 
-    /* RODAPÉ FIXO NO FIM */
+    /* O TRUQUE PARA O CHATBOX SUBIR */
+    /* Removemos a fixação no fundo absoluto para ele respeitar os espaços que criamos */
+    div[data-testid="stChatInput"] {
+        position: relative !important;
+        bottom: auto !important;
+        margin-top: 50px !important;
+        margin-bottom: 30px !important;
+    }
+
+    /* RODAPÉ NO FIM */
     .custom-footer {
         position: fixed;
         left: 0;
         bottom: 0;
         width: 100%;
         text-align: center;
-        padding: 15px;
+        padding: 10px;
         background-color: white;
         border-top: 1px solid #e0e0e0;
         color: #1e1e1e;
         z-index: 999;
     }
 
-    /* ESTILO DAS MÉTRICAS DE RESULTADO */
+    /* MÉTRICAS DE RESULTADOS */
     div[data-testid="stMetric"] { 
         background-color: #f8f9fa; 
         border-left: 5px solid #002e5d; 
@@ -55,7 +64,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
-    # Base de Dados (Preservada)
+    # Base de Dados (Completa)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -79,7 +88,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar
+    # Sidebar (Preservada com métricas brancas)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -90,32 +99,52 @@ def main():
     # 1. TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # 2. ESPAÇO PARA O MEIO
-    st.write("##")
-    st.write("##")
-    
-    # 3. BARRA DE PESQUISA (Substituí o chat_input por text_input para ele ficar no meio!)
-    pergunta = st.text_input("", placeholder="Diga-me o que procura no catálogo...", label_visibility="collapsed")
+    # 2. ESPAÇO PARA EMPURRAR O CHAT PARA O MEIO
+    st.write("#")
+    st.write("#")
+    st.write("#")
 
-    if pergunta:
-        p = pergunta.lower()
-        # Lógica de resposta universal
-        resultados = []
-        for t, d in livros.items():
-            info = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
-            if fuzz.partial_ratio(p, info) > 80 or p in info:
-                resultados.append((t, d))
+    # 3. CHATBOX ORIGINAL (Agora no meio por causa dos espaços acima)
+    p = st.chat_input("Diga-me o que procura no catálogo...")
+
+    if p:
+        # Mostra a tua pergunta num balão de chat
+        with st.chat_message("user"):
+            st.write(p)
         
-        if resultados:
-            for t, d in resultados:
-                st.write(f"### {t}")
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Autor", d['autor'])
-                c2.metric("Ano", d['ano'])
-                c3.metric("Páginas", d['páginas'])
-                st.divider()
+        pergunta = p.lower()
+        
+        with st.chat_message("assistant"):
+            # Lógica de Resposta Universal
+            resultados = []
+            
+            # Caso especial: Lista de livros
+            if "lista" in pergunta or "todos" in pergunta:
+                st.write("### Catálogo Completo:")
+                for t in sorted(livros.keys()):
+                    st.write(f"📖 **{t}** — {livros[t]['autor']}")
+            else:
+                # Busca normal
+                for t, d in livros.items():
+                    info = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
+                    if fuzz.partial_ratio(pergunta, info) > 80 or pergunta in info:
+                        resultados.append((t, d))
+                
+                if resultados:
+                    for t, d in resultados:
+                        st.write(f"### {t}")
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Autor", d['autor'])
+                        c2.metric("Ano", d['ano'])
+                        c3.metric("Páginas", d['páginas'])
+                        st.divider()
+                else:
+                    st.warning("Não encontrei informações para essa pesquisa.")
 
-    # 4. RODAPÉ FIXO
+    # 4. ESPAÇO NO FIM PARA O RODAPÉ NÃO TAPAR NADA
+    for _ in range(5): st.write("")
+
+    # RODAPÉ
     st.markdown("""
         <div class="custom-footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
