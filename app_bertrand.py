@@ -72,12 +72,11 @@ def main():
             st.markdown(f"**🏷️ Género:** {dados['genero']}")
             st.markdown(f"**📅 Ano de Lançamento:** {dados['ano']}")
 
-        with col2:
+      with col2:
             st.markdown(f"**📄 Número de Páginas:** {dados['paginas']}")
             st.markdown(f"**📈 Tiragem Registada:** {dados['tiragem']} exemplares")
 
-       st.success("Dados carregados com sucesso.")
-
+        st.success("Dados carregados com sucesso.")
 
 if __name__ == "__main__":
     main()
