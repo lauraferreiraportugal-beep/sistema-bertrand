@@ -32,8 +32,9 @@ st.markdown("""
 
   
     div[data-testid="stChatInput"] {
-        margin-top: 130px;
+        margin-top: 30px;
         width: 100%;
+        text-align: center;
     }
 
     /* RODAPÉ NO FIM - PRESERVADO */
