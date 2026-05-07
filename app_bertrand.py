@@ -15,9 +15,13 @@ st.markdown("""
         color: white; 
     }
     
+    /* MÉTRICAS DA SIDEBAR EM BRANCO - PRESERVADAS */
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] {
         color: white !important;
         font-size: 1.8em;
+    }
+    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] {
+        color: #d1d1d1 !important;
     }
     
     /* TÍTULO */
@@ -28,19 +32,20 @@ st.markdown("""
         margin-top: 0px;
     }
 
-    /* MOVER CHATBOX PARA ONDE ESTÁ O CÍRCULO NA FOTO */
-    /* Removemos a fixação no fundo e damos margem */
+    /* FORÇAR O CHATBOX PARA CIMA (MÉTODO ULTRA) */
+    /* Removemos a posição fixa que o Streamlit impõe ao chat_input */
+    footer {display: none !important;}
+    
     div[data-testid="stChatInput"] {
         position: relative !important;
         bottom: auto !important;
-        width: 100% !important;
-        margin-top: 20px !important;
-        margin-bottom: 40px !important;
-        padding: 0px !important;
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
+        margin-bottom: 50px !important;
     }
 
     /* RODAPÉ NO FIM - PRESERVADO */
-    .footer {
+    .custom-footer {
         position: fixed;
         left: 0;
         bottom: 0;
@@ -50,7 +55,7 @@ st.markdown("""
         background-color: white;
         border-top: 1px solid #e0e0e0;
         color: #1e1e1e;
-        z-index: 100;
+        z-index: 999;
     }
     .footer-light {
         color: #888888;
@@ -92,7 +97,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Métricas preservadas)
+    # Sidebar (Métricas e títulos preservados)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -103,7 +108,7 @@ def main():
     # 1. TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # 2. CHATBOX (Agora no local solicitado)
+    # 2. CHATBOX (Agora forçado a aparecer no fluxo normal, logo abaixo do título)
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -142,9 +147,9 @@ def main():
                         st.divider()
                     respondido = True
 
-    # 3. RODAPÉ (No fundo absoluto)
+    # 3. RODAPÉ (Fixo no fundo)
     st.markdown("""
-        <div class="footer">
+        <div class="custom-footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
             <span class="footer-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
         </div>
