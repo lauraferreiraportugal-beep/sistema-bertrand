@@ -1,13 +1,64 @@
 import streamlit as st
 
-# Configuração da página
-st.set_page_config(page_title="Portal IT Bertrand", page_icon="📚")
+# 1. Configuração da Página com a identidade Bertrand
+st.set_page_config(page_title="Portal Editorial Bertrand", page_icon="📖", layout="wide")
+
+# 2. CSS Personalizado com a paleta de cores da Bertrand (Azul Marinho e Branco)
+st.markdown("""
+    <style>
+    /* Fundo geral mais limpo */
+    .stApp {
+        background-color: #ffffff;
+    }
+    
+    /* Barra lateral em Azul Marinho Bertrand */
+    [data-testid="stSidebar"] {
+        background-color: #002e5d;
+        color: white;
+    }
+    
+    /* Ajuste de cores de texto na barra lateral */
+    [data-testid="stSidebar"] .stMarkdown p {
+        color: #f0f0f0;
+    }
+    
+    /* Estilo dos cartões de métricas */
+    div[data-testid="stMetric"] {
+        background-color: #f8f9fa;
+        border-left: 5px solid #002e5d;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Títulos em Azul Marinho */
+    h1, h2, h3 {
+        color: #002e5d !important;
+        font-family: 'Georgia', serif;
+    }
+
+    /* Botões e elementos de destaque */
+    .stButton>button {
+        background-color: #002e5d;
+        color: white;
+        border-radius: 5px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 def main():
-    st.title("Sistema de Gestão Editorial Bertrand")
-    st.subheader("Consulta de Catálogo e Tiragens")
+    # Barra Lateral
+    st.sidebar.markdown(f"<h2 style='color: white;'>Bertrand</h2>", unsafe_allow_html=True)
+    st.sidebar.markdown("---")
+    st.sidebar.write("🏷️ **Departamento de IT**")
+    st.sidebar.write("Controlo de Tiragens e Inventário Editorial.")
+    
+    # Conteúdo Principal
+    st.title("SISTEMA DE GESTÃO EDITORIAL")
+    st.markdown("#### :grey[Base de Dados Oficial de Publicações]")
+    st.write("")
 
-    # Base de dados com "género" e "páginas" acentuados
+    # Base de Dados (A tua lista completa com acentos)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": "50.000", "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": "15.000", "género": "Ficção"},
@@ -31,33 +82,25 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": "70.000", "género": "Ficção"}
     }
 
-    # Barra lateral
-    st.sidebar.title("Área de IT")
-    st.sidebar.info("Projeto desenvolvido para consulta rápida de dados editoriais.")
+    # Seleção de Livro com design limpo
+    lista_ordenada = sorted(list(livros.keys()))
+    escolha = st.selectbox("📖 Selecione um título para consulta técnica:", ["-- Pesquisar no Catálogo --"] + lista_ordenada)
 
-    # Seleção do Livro
-    lista_livros = sorted(list(livros.keys()))
-    livro_escolhido = st.selectbox("Selecione um livro para consultar:", ["-- Selecione --"] + lista_livros)
+    if escolha != "-- Pesquisar no Catálogo --":
+        dados = livros[escolha]
+        
+        st.write(f"### {escolha}")
+        
+        # Métricas com estilo Bertrand (Azul e Branco)
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Páginas", f"{dados['páginas']} pp.")
+        m2.metric("Publicação", dados['ano'])
+        m3.metric("Tiragem (Exemplares)", dados['tiragem'])
 
-    if livro_escolhido != "-- Selecione --":
-        st.divider()
-        st.header(f"📖 {livro_escolhido}")
-
-        # Organização em colunas
-        col1, col2 = st.columns(2)
-        dados = livros[livro_escolhido]
-
-        with col1:
-            st.markdown(f"**👤 Autor:** {dados['autor']}")
-            st.markdown(f"**🏷️ Género:** {dados['género']}")
-            st.markdown(f"**📅 Ano de Lançamento:** {dados['ano']}")
-
-        with col2:
-            # Aqui agora usamos 'páginas' com acento
-            st.markdown(f"**📄 Número de Páginas:** {dados['páginas']}")
-            st.markdown(f"**📈 Tiragem Registada:** {dados['tiragem']} exemplares")
-
-        st.success("Dados carregados com sucesso do catálogo Bertrand.")
-
-if __name__ == "__main__":
-    main()
+        st.markdown("---")
+        
+        # Informação detalhada
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown(f"**🖋️ Autor:** {dados['autor']}")
+        with c2:
