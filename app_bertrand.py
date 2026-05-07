@@ -1,7 +1,7 @@
 import streamlit as st
 from thefuzz import fuzz
 
-# 1. Configuração e Estilo Bertrand
+# 1. Configuração e Estilo Bertrand (PRESERVADO)
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="centered")
 
 st.markdown("""
@@ -18,6 +18,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
+    # Base de Dados (PRESERVADA)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -50,7 +51,7 @@ def main():
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    p = st.chat_input("Pergunte por autores, géneros ou estatísticas...")
+    p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
         with st.chat_message("user"):
@@ -61,64 +62,62 @@ def main():
         num = numeros[0] if numeros else None
         
         with st.chat_message("assistant"):
-            respondido = False
+            # FILTRAGEM ACUMULATIVA
+            resultados = livros.copy()
+
+            # 1. Filtro por Autor
+            autores = list(set([d['autor'].lower() for d in livros.values()]))
+            for a in autores:
+                if a in pergunta:
+                    resultados = {t: d for t, d in resultados.items() if d['autor'].lower() == a}
+
+            # 2. Filtro por Género
+            generos = ["romance", "ficção", "biografia", "história", "clássico", "infantil", "thriller", "poesia"]
+            for g in generos:
+                if g in pergunta:
+                    resultados = {t: d for t, d in resultados.items() if g in d['género'].lower()}
+
+            # 3. Filtro de Páginas
+            if num and ("págin" in pergunta or "pp" in pergunta):
+                if "mais" in pergunta or "maior" in pergunta or "acima" in pergunta:
+                    resultados = {t: d for t, d in resultados.items() if d['páginas'] > num}
+                elif "menos" in pergunta or "inferior" in pergunta or "abaixo" in pergunta:
+                    resultados = {t: d for t, d in resultados.items() if d['páginas'] < num}
+
+            # 4. Filtro de Ano
+            if num and ("ano" in pergunta or "publicado" in pergunta or "lançado" in pergunta) and num > 1000:
+                if "depois" in pergunta or "após" in pergunta or "maior" in pergunta:
+                    resultados = {t: d for t, d in resultados.items() if d['ano'] > num}
+                elif "antes" in pergunta or "anterior" in pergunta:
+                    resultados = {t: d for t, d in resultados.items() if d['ano'] < num}
+
+            # APRESENTAÇÃO DOS RESULTADOS
+            if "tiragem" in pergunta:
+                if not resultados:
+                    st.warning("Não encontrei livros com esses critérios para calcular a tiragem.")
+                else:
+                    total_tiragem = sum(d['tiragem'] for d in resultados.values())
+                    st.write(f"### Análise de Tiragem")
+                    st.write(f"A tiragem total para os filtros selecionados é de **{total_tiragem:,} exemplares**.")
+                    if len(resultados) > 1:
+                        st.caption(f"Média de tiragem por título: {int(total_tiragem/len(resultados)):,} ex.")
             
-            # --- 1. BUSCA POR GÉNERO (ADICIONADO AGORA) ---
-            generos_na_base = list(set([d['género'].lower() for d in livros.values()]))
-            genero_detectado = next((g for g in generos_na_base if g in pergunta), None)
+            elif "todos os livros" in pergunta or "lista" in pergunta or not p:
+                st.write(f"### Listagem Completa ({len(resultados)} títulos)")
+                for t, d in resultados.items():
+                    st.write(f"📖 **{t}** — {d['autor']} ({d['ano']})")
             
-            # Se não encontrou o género exato, tenta ver se a palavra "romance" ou "ficção" está lá
-            if not genero_detectado:
-                if "romance" in pergunta: genero_detectado = "romance"
-                if "ficção" in pergunta: genero_detectado = "ficção"
-
-            if ("livro" in pergunta or "quais" in pergunta or "todos" in pergunta) and genero_detectado:
-                res = [f"📖 **{t}** — {d['autor']} ({d['ano']})" for t, d in livros.items() if genero_detectado in d['género'].lower()]
-                if res:
-                    st.write(f"Aqui estão os títulos de **{genero_detectado.title()}** no catálogo:")
-                    for r in res: st.write(r)
-                    respondido = True
-
-            # --- 2. BUSCA POR AUTOR (MANTIDO) ---
-            if not respondido:
-                autores_na_base = list(set([d['autor'].lower() for d in livros.values()]))
-                autor_detectado = next((a for a in autores_na_base if a in pergunta), None)
-                
-                if ("livro" in pergunta or "quais" in pergunta) and autor_detectado:
-                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['autor'].lower() == autor_detectado]
-                    st.write(f"Livros de **{autor_detectado.title()}**:")
-                    for r in res: st.write(r)
-                    respondido = True
-
-            # --- 3. LÓGICA DE TIRAGEM E PÁGINAS (MANTIDO) ---
-            if not respondido and num:
-                if "tiragem" in pergunta:
-                    op = (lambda x: x <= num) if "inferior" in pergunta or "menos" in pergunta else (lambda x: x >= num)
-                    resultados = [(t, d) for t, d in livros.items() if op(d['tiragem'])]
-                    st.write("Resultados de tiragem:")
-                    for t, d in resultados: st.write(f"📖 **{t}** — {d['tiragem']:,} ex.")
-                    respondido = True
-
-            # --- 4. PESQUISA GERAL (MANTIDO) ---
-            if not respondido:
-                found = []
-                for t, d in livros.items():
-                    texto_total = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
-                    if fuzz.partial_ratio(pergunta, texto_total) > 80:
-                        found.append((t, d))
-                
-                if found:
-                    for t, d in found:
-                        st.write(f"### {t}")
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric("Autor", d['autor'])
-                        c2.metric("Ano", d['ano'])
-                        c3.metric("Páginas", d['páginas'])
-                        st.divider()
-                    respondido = True
-
-            if not respondido:
-                st.warning("Não encontrei resultados. Tente perguntar por um autor, género (Romance, Ficção, Clássico) ou tiragem.")
+            elif resultados:
+                for t, d in resultados.items():
+                    st.write(f"### {t}")
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Autor", d['autor'])
+                    c2.metric("Ano", d['ano'])
+                    c3.metric("Tiragem", f"{d['tiragem']:,}")
+                    st.write(f"**Género:** {d['género']} | **Páginas:** {d['páginas']}")
+                    st.divider()
+            else:
+                st.warning("Não encontrei resultados para essa combinação de filtros.")
 
     st.markdown("""<div class="custom-footer">© 2024 Bertrand Editora | Inteligência Editorial<br><span style="color: #888; font-size: 0.85em;">Assistente Inteligente de Gestão Editorial - Análise Completa.</span></div>""", unsafe_allow_html=True)
 
