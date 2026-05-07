@@ -39,7 +39,7 @@ st.markdown("""
 
 def main():
     # Barra Lateral com Logótipo
-    st.sidebar.image("https://www.bertrand.pt/img/bertrand_logo.png", width=200)
+    st.sidebar.image("logo.png.png", width=200)
     st.sidebar.markdown("---")
     st.sidebar.write("📌 **Projeto de Estágio**")
     st.sidebar.write("Consulta rápida de catálogo e métricas editoriais.")
