@@ -32,7 +32,6 @@ st.markdown("""
     div[data-testid="stChatInput"] {
         position: static !important; /* Remove o bloqueio no fundo */
         margin-top: -10px !important;
-        margin-bottom: 50px !important;
     }
 
     /* Rodapé no final da página - PRESERVADO */
