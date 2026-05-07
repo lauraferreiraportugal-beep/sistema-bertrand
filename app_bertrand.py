@@ -13,6 +13,14 @@ st.markdown("""
     h1 { color: #002e5d !important; font-family: 'Georgia', serif; text-align: center; margin-top: 20px; }
     div[data-testid="stChatInput"] { position: relative !important; bottom: auto !important; margin-top: 50px !important; margin-bottom: 30px !important; }
     .custom-footer { position: fixed; left: 0; bottom: 0; width: 100%; text-align: center; padding: 10px; background-color: white; border-top: 1px solid #e0e0e0; color: #1e1e1e; z-index: 999; }
+    
+    /* AJUSTE PARA O NOME DO AUTOR APARECER COMPLETO */
+    [data-testid="stMetricValue"] {
+        white-space: normal !important;
+        word-break: break-word !important;
+        font-size: 1.2em !important; /* Diminuímos ligeiramente o tamanho para caber melhor */
+    }
+    
     div[data-testid="stMetric"] { background-color: #f8f9fa; border-left: 5px solid #002e5d; padding: 15px; border-radius: 5px; }
     </style>
     """, unsafe_allow_html=True)
@@ -93,7 +101,6 @@ def main():
                     else:
                         resultados = {k: v for k, v in resultados.items() if v['ano'] < num}
 
-            # EXIBIÇÃO CORRIGIDA (DETALHADA POR TÍTULO)
             if not resultados:
                 st.warning("Não foram encontrados livros com esses critérios.")
             else:
@@ -101,17 +108,14 @@ def main():
                 if filtros_ativos:
                     st.caption(f"Filtros aplicados: {', '.join(filtros_ativos)}")
                 
-                # Se a pergunta pede tiragem, mostramos a lista detalhada com foco nos números
                 if "tiragem" in pergunta:
                     for t, d in resultados.items():
                         st.write(f"📖 **{t}**")
                         st.write(f"Tiragem: **{d['tiragem']:,} exemplares**")
                         st.divider()
-                # Se for uma pergunta de listagem geral
                 elif "todos" in pergunta or "lista" in pergunta:
                     for t, d in resultados.items():
                         st.write(f"📖 **{t}** — {d['autor']} ({d['ano']})")
-                # Se for uma pesquisa específica de ficha técnica
                 else:
                     for t, d in resultados.items():
                         st.write(f"### {t}")
