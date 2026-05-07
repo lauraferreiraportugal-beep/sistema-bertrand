@@ -20,22 +20,22 @@ st.markdown("""
         font-size: 1.8em;
     }
     
-    /* Título Centralizado no Topo */
+    /* Título Centralizado */
     h1 { 
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: -30px;
+        margin-top: -20px;
     }
 
-    /* FORÇAR O CHATBOX PARA O TOPO (Abaixo do Título) */
+    /* AJUSTE DO CHATBOX: REMOVER DO FUNDO E SUBIR */
     div[data-testid="stChatInput"] {
-        position: relative;
-        margin-top: 20px !important;
-        margin-bottom: 40px !important;
+        position: static !important; /* Remove o bloqueio no fundo */
+        margin-top: 30px !important;
+        margin-bottom: 50px !important;
     }
 
-    /* Rodapé no final da página - POSIÇÃO SOLICITADA */
+    /* Rodapé no final da página - PRESERVADO */
     .footer {
         position: fixed;
         left: 0;
@@ -53,7 +53,7 @@ st.markdown("""
         font-size: 0.85em;
     }
     
-    /* Métricas de resultados */
+    /* Estilo das métricas centrais */
     div[data-testid="stMetric"] { 
         background-color: #f8f9fa; 
         border-left: 5px solid #002e5d; 
@@ -64,7 +64,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
-    # Base de Dados
+    # Base de Dados (Preservada)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -88,7 +88,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (PRESERVADA)
+    # Sidebar (Preservada com métricas calculadas)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -96,10 +96,10 @@ def main():
         st.markdown("---")
         st.caption("Ficha Técnica Editorial")
 
-    # 1. Título
+    # Título
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # 2. Chatbox no TOPO (Abaixo do Título)
+    # Chatbox (Agora configurado para subir no layout)
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -138,7 +138,7 @@ def main():
                         st.divider()
                     respondido = True
 
-    # 3. Rodapé no FINAL DA PÁGINA
+    # Rodapé no FINAL DA PÁGINA
     st.markdown("""
         <div class="footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
