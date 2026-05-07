@@ -2,7 +2,7 @@ import streamlit as st
 from thefuzz import fuzz
 from collections import Counter
 
-# 1. Configuração e Estilo Bertrand (PRESERVADO)
+# 1. Configuração e Estilo Bertrand
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="wide")
 st.markdown("""
     <style>
@@ -15,18 +15,17 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
-    # Logótipo na Sidebar (PRESERVADO com segurança)
     try:
         st.sidebar.image("logo.png", width=200)
     except:
         st.sidebar.title("Bertrand")
     
     st.sidebar.markdown("---")
-    st.sidebar.info("Assistente Inteligente Acumulativo - Versão de Gestão.")
+    st.sidebar.info("Assistente Inteligente Acumulativo - Gestão de Inventário.")
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
     
-    # Base de Dados (PRESERVADA)
+    # Base de Dados
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -50,7 +49,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    pergunta = st.chat_input("Como posso ajudar a Bertrand hoje?")
+    pergunta = st.chat_input("Diga-me o que procura...")
 
     if pergunta:
         with st.chat_message("user"):
@@ -59,39 +58,49 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # Extração de números (Páginas/Anos)
             numeros = [int(s) for s in p.split() if s.isdigit()]
             num = numeros[0] if numeros else None
             respondido = False
 
-            # --- A) COMANDO: LISTA/TODOS ---
-            if "lista" in p or "todos" in p:
+            # --- A) FILTRO DINÂMICO: PÁGINAS (MAIS OU MENOS) ---
+            if num and ("págin" in p or "pagin" in p or "pp" in p):
+                if "mais" in p or "maior" in p or "acima" in p:
+                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
+                    texto = "mais"
+                else:
+                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
+                    texto = "menos"
+                
+                st.write(f"Livros com {texto} de {num} páginas:")
+                for r in res: st.write(r)
+                respondido = True
+
+            # --- B) FILTRO DINÂMICO: ANOS (ANTES OU DEPOIS) ---
+            elif num and ("ano" in p or "lançado" in p):
+                if "depois" in p or "após" in p or "mais recente" in p:
+                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] > num]
+                    texto = "depois de"
+                else:
+                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
+                    texto = "antes de"
+                
+                st.write(f"Livros {texto} {num}:")
+                for r in res: st.write(r)
+                respondido = True
+
+            # --- C) COMANDOS GERAIS (LISTA, TIRAGEM, RANKING) ---
+            elif "lista" in p or "todos" in p:
                 st.write("### Catálogo Completo:")
                 for t in sorted(livros.keys()):
                     st.write(f"📖 **{t}** — {livros[t]['autor']}")
                 respondido = True
 
-            # --- B) FILTRO: PÁGINAS ---
-            elif num and ("págin" in p or "pagin" in p or "pp" in p):
-                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
-                st.write(f"Livros com menos de {num} páginas:")
-                for r in res: st.write(r)
-                respondido = True
-
-            # --- C) FILTRO: ANOS ---
-            elif num and ("ano" in p or "antes" in p or "lançado" in p):
-                res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
-                st.write(f"Livros antes de {num}:")
-                for r in res: st.write(r)
-                respondido = True
-
-            # --- D) FILTRO: TIRAGEM TOTAL ---
             elif "tiragem" in p and ("total" in p or "todos" in p):
                 total = sum(d['tiragem'] for d in livros.values())
                 st.write(f"A tiragem total registada é de **{total:,} exemplares**.")
                 respondido = True
 
-            # --- E) PESQUISA UNIVERSAL (Com métricas visuais) ---
+            # --- D) PESQUISA UNIVERSAL (MÉTRICAS) ---
             if not respondido:
                 resultados = []
                 for t, d in livros.items():
@@ -111,7 +120,7 @@ def main():
                     respondido = True
 
             if not respondido:
-                st.write("Não encontrei esses dados. Tente simplificar a pesquisa ou use palavras-chave.")
+                st.write("Infelizmente não consegui processar esse pedido. Tente ser mais específico.")
 
 if __name__ == "__main__":
     main()
