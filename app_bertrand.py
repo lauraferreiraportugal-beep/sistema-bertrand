@@ -8,63 +8,41 @@ st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* BARRA LATERAL AZUL - TUDO PRESERVADO */
-    [data-testid="stSidebar"] { 
-        background-color: #002e5d; 
-        color: white; 
-    }
-    
-    [data-testid="stSidebar"] div[data-testid="stMetricValue"] {
-        color: white !important;
-        font-size: 1.8em;
-    }
-    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] {
-        color: #d1d1d1 !important;
-    }
+    /* BARRA LATERAL AZUL - PRESERVADA */
+    [data-testid="stSidebar"] { background-color: #002e5d; color: white; }
+    [data-testid="stSidebar"] div[data-testid="stMetricValue"] { color: white !important; font-size: 1.8em; }
+    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] { color: #d1d1d1 !important; }
     
     /* TÍTULO */
-    h1 { 
-        color: #002e5d !important; 
-        font-family: 'Georgia', serif; 
-        text-align: center;
-        margin-top: 20px;
-    }
+    h1 { color: #002e5d !important; font-family: 'Georgia', serif; text-align: center; margin-top: 20px; }
 
-    /* O TRUQUE PARA O CHATBOX SUBIR */
-    /* Removemos a fixação no fundo absoluto para ele respeitar os espaços que criamos */
+    /* CHATBOX NO MEIO */
     div[data-testid="stChatInput"] {
         position: relative !important;
         bottom: auto !important;
-        margin-top: 50px !important;
+        margin-top: 100px !important; 
         margin-bottom: 30px !important;
     }
 
     /* RODAPÉ NO FIM */
     .custom-footer {
         position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        text-align: center;
-        padding: 10px;
-        background-color: white;
-        border-top: 1px solid #e0e0e0;
-        color: #1e1e1e;
-        z-index: 999;
+        left: 0; bottom: 0; width: 100%;
+        text-align: center; padding: 10px;
+        background-color: white; border-top: 1px solid #e0e0e0;
+        color: #1e1e1e; z-index: 999;
     }
 
     /* MÉTRICAS DE RESULTADOS */
     div[data-testid="stMetric"] { 
-        background-color: #f8f9fa; 
-        border-left: 5px solid #002e5d; 
-        padding: 15px; 
-        border-radius: 5px; 
+        background-color: #f8f9fa; border-left: 5px solid #002e5d; 
+        padding: 15px; border-radius: 5px; 
     }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
-    # Base de Dados (Completa)
+    # Base de Dados (O cérebro do programa)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -88,7 +66,6 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Preservada com métricas brancas)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -96,38 +73,49 @@ def main():
         st.markdown("---")
         st.write("📌 **Projeto de Estágio**")
 
-    # 1. TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # 2. ESPAÇO PARA EMPURRAR O CHAT PARA O MEIO
-    st.write("#")
-    st.write("#")
-    st.write("#")
-
-    # 3. CHATBOX ORIGINAL (Agora no meio por causa dos espaços acima)
-    p = st.chat_input("Diga-me o que procura no catálogo...")
+    # O CHATBOX
+    p = st.chat_input("Pergunte-me qualquer coisa sobre os livros...")
 
     if p:
-        # Mostra a tua pergunta num balão de chat
         with st.chat_message("user"):
             st.write(p)
         
         pergunta = p.lower()
+        numeros = [int(s) for s in pergunta.split() if s.isdigit()]
+        num = numeros[0] if numeros else None
         
         with st.chat_message("assistant"):
-            # Lógica de Resposta Universal
-            resultados = []
+            respondido = False
             
-            # Caso especial: Lista de livros
-            if "lista" in pergunta or "todos" in pergunta:
-                st.write("### Catálogo Completo:")
-                for t in sorted(livros.keys()):
-                    st.write(f"📖 **{t}** — {livros[t]['autor']}")
-            else:
-                # Busca normal
+            # --- LÓGICA DE TIRAGENS (Somas) ---
+            if "tiragem" in pergunta and ("total" in pergunta or "todos" in pergunta):
+                filtro = next((v for v in ["saramago", "pessoa", "ficção", "romance"] if v in pergunta), None)
+                if filtro:
+                    total_f = sum(d['tiragem'] for t, d in livros.items() if filtro in d['autor'].lower() or filtro in d['género'].lower())
+                    st.write(f"A tiragem total para essa categoria é de **{total_f:,} exemplares**.")
+                else:
+                    st.write(f"A tiragem total de todo o catálogo é de **{sum(d['tiragem'] for d in livros.values()):,} exemplares**.")
+                respondido = True
+
+            # --- LÓGICA DE FILTROS NUMÉRICOS (Páginas/Anos) ---
+            elif num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
+                op = (lambda x: x > num) if ("mais" in pergunta or "maior" in pergunta) else (lambda x: x < num)
+                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if op(d['páginas'])]
+                st.write(f"Livros encontrados:")
+                for r in res: st.write(r)
+                respondido = True
+
+            # --- LÓGICA DE PESQUISA UNIVERSAL (A que responde a quase tudo) ---
+            if not respondido:
+                resultados = []
                 for t, d in livros.items():
-                    info = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
-                    if fuzz.partial_ratio(pergunta, info) > 80 or pergunta in info:
+                    # O programa cria uma "super-frase" com tudo o que sabe sobre o livro
+                    conhecimento_total = f"{t} {d['autor']} {d['género']} {d['ano']} {d['tiragem']}".lower()
+                    
+                    # Se a tua pergunta tiver palavras que existem nessa super-frase...
+                    if fuzz.partial_ratio(pergunta, conhecimento_total) > 80 or any(word in conhecimento_total for word in pergunta.split() if len(word) > 3):
                         resultados.append((t, d))
                 
                 if resultados:
@@ -137,12 +125,12 @@ def main():
                         c1.metric("Autor", d['autor'])
                         c2.metric("Ano", d['ano'])
                         c3.metric("Páginas", d['páginas'])
+                        st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,}")
                         st.divider()
-                else:
-                    st.warning("Não encontrei informações para essa pesquisa.")
+                    respondido = True
 
-    # 4. ESPAÇO NO FIM PARA O RODAPÉ NÃO TAPAR NADA
-    for _ in range(5): st.write("")
+            if not respondido:
+                st.warning("Não encontrei informações sobre isso. Tente ser mais específico (ex: Autor, Género ou Número de páginas).")
 
     # RODAPÉ
     st.markdown("""
