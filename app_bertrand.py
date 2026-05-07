@@ -31,7 +31,7 @@ st.markdown("""
     /* AJUSTE DO CHATBOX: REMOVER DO FUNDO E SUBIR */
     div[data-testid="stChatInput"] {
         position: static !important; /* Remove o bloqueio no fundo */
-        margin-top: -10px !important;
+        margin-top: 60px !important;
     }
 
     /* Rodapé no final da página - PRESERVADO */
