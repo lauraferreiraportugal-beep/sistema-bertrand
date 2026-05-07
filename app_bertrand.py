@@ -1,10 +1,11 @@
 import streamlit as st
 from collections import Counter
+from thefuzz import fuzz, process
 
-# 1. Configuração da Página
+# 1. Configuração
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="🧠", layout="wide")
 
-# 2. Estilo Visual Bertrand
+# 2. Estilo
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
@@ -19,14 +20,6 @@ def main():
         st.sidebar.image("logo.png", width=200)
     except:
         st.sidebar.title("Bertrand")
-        
-    st.sidebar.title("Comandos Úteis")
-    st.sidebar.write("- 'Livros com menos de 200 páginas'")
-    st.sidebar.write("- 'Quem tem mais livros?'")
-    st.sidebar.write("- 'Resumo do catálogo'")
-    
-    st.title("🧠 Bertrand Editorial Intelligence")
-    st.markdown("##### Assistente para Apoio à Decisão e Planeamento")
 
     # Base de Dados
     livros = {
@@ -52,7 +45,10 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    pergunta = st.chat_input("Como posso ajudar a Bertrand hoje?")
+    st.title("🧠 Bertrand Editorial Intelligence")
+    st.markdown("##### Assistente Flexível (Pode escrever com erros!)")
+
+    pergunta = st.chat_input("Como posso ajudar?")
 
     if pergunta:
         with st.chat_message("user"):
@@ -61,40 +57,43 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # 1. FILTRO DE PÁGINAS (Prioridade)
-            if "páginas" in p and ("menos" in p or "abaixo" in p or "até" in p):
+            # Lógica de similaridade para palavras-chave
+            score_paginas = fuzz.partial_ratio(p, "páginas")
+            score_autor = fuzz.partial_ratio(p, "autor")
+            score_tiragem = fuzz.partial_ratio(p, "tiragem")
+
+            # 1. Filtro de Páginas Inteligente
+            if score_paginas > 70 and ("menos" in p or "abaixo" in p or "ate" in p):
                 try:
                     num = int(''.join(filter(str.isdigit, p)))
                     res = [f"📖 **{t}** ({d['páginas']} pág.)" for t, d in livros.items() if d['páginas'] < num]
-                    if res:
-                        st.write(f"Encontrei estes títulos com menos de {num} páginas:")
-                        for r in res: st.write(r)
-                    else:
-                        st.write(f"Não encontrei livros com menos de {num} páginas.")
-                except: st.write("Por favor, indica o número de páginas (ex: 200).")
+                    st.write(f"Encontrei estes títulos até {num} páginas:")
+                    for r in res: st.write(r)
+                except: st.write("Indica o número de páginas.")
 
-            # 2. RANKING DE AUTORES
-            elif "mais livros" in p or "autor com mais" in p:
+            # 2. Ranking Inteligente
+            elif score_autor > 70 and ("mais" in p or "top" in p):
                 contagem = Counter([d['autor'] for d in livros.values()])
                 autor_top, qtd = contagem.most_common(1)[0]
-                st.write(f"O autor com mais títulos é **{autor_top}** com {qtd} livros.")
+                st.write(f"O autor com mais títulos é **{autor_top}**.")
 
-            # 3. RESUMO
-            elif "resumo" in p or "catálogo" in p:
-                st.write(f"Gerimos **{len(livros)} títulos**. Tiragem total: **{sum(d['tiragem'] for d in livros.values()):,}**.")
-
-            # 4. PESQUISA GERAL (TEXTO)
+            # 3. Pesquisa Global Flexível (Título, Autor ou Género)
             else:
                 resultados = []
                 for titulo, info in livros.items():
-                    if p in titulo.lower() or p in info['autor'].lower() or p in info['género'].lower():
-                        resultados.append(f"📖 **{titulo}** | {info['autor']} | Tiragem: {info['tiragem']:,}")
+                    # Verifica se o que foi escrito é parecido com o título, autor ou género
+                    s1 = fuzz.partial_ratio(p, titulo.lower())
+                    s2 = fuzz.partial_ratio(p, info['autor'].lower())
+                    s3 = fuzz.partial_ratio(p, info['género'].lower())
+                    
+                    if s1 > 80 or s2 > 80 or s3 > 80:
+                        resultados.append(f"📖 **{titulo}** | {info['autor']} | {info['género']}")
                 
                 if resultados:
-                    st.write("Resultados da pesquisa:")
-                    for r in resultados: st.write(r)
+                    st.write("Acho que procuras por isto:")
+                    for r in list(set(resultados)): st.write(r)
                 else:
-                    st.write("Não percebi a pergunta. Tente: 'livros com menos de 200 páginas' ou 'tiragem de Saramago'.")
+                    st.write("Não percebi bem. Podes tentar escrever de outra forma?")
 
 if __name__ == "__main__":
     main()
