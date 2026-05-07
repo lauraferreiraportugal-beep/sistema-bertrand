@@ -9,13 +9,12 @@ st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* BARRA LATERAL AZUL - PRESERVADA */
+    /* BARRA LATERAL AZUL - PRESERVADA COM TUDO */
     [data-testid="stSidebar"] { 
         background-color: #002e5d; 
         color: white; 
     }
     
-    /* MÉTRICAS DA SIDEBAR EM BRANCO */
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] {
         color: white !important;
         font-size: 1.8em;
@@ -29,23 +28,19 @@ st.markdown("""
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: -30px;
-        padding-bottom: 10px;
+        margin-top: 20px;
     }
 
-    /* MATAR O POSICIONAMENTO FIXO DO CHAT */
-    /* Este bloco é o que vai garantir que ele sobe */
-    .stChatInput {
-        position: static !important;
-    }
+    /* POSICIONAMENTO CENTRALIZADO DO CHATBOX */
     div[data-testid="stChatInput"] {
         position: relative !important;
         bottom: auto !important;
-        margin-top: 0px !important;
-        margin-bottom: 20px !important;
+        /* AJUSTE DE ALTURA: 200px empurra o chat para o meio da página */
+        margin-top: 200px !important; 
+        margin-bottom: 50px !important;
     }
 
-    /* RODAPÉ NO FIM */
+    /* RODAPÉ NO FIM - PRESERVADO */
     .custom-footer {
         position: fixed;
         left: 0;
@@ -55,6 +50,7 @@ st.markdown("""
         padding: 10px;
         background-color: white;
         border-top: 1px solid #e0e0e0;
+        color: #1e1e1e;
         z-index: 999;
     }
     .footer-light {
@@ -97,22 +93,20 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Títulos e Métricas garantidos)
+    # Sidebar (Tudo preservado e calculado)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
         st.metric("Total Tiragem", f"{sum(d['tiragem'] for d in livros.values()):,}")
         st.markdown("---")
+        st.write("📌 **Projeto de Estágio**")
         st.caption("Ficha Técnica Editorial")
 
     # TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # CONTENTOR PARA O CHAT (Para o obrigar a ficar no topo)
-    chat_container = st.container()
-
-    with chat_container:
-        p = st.chat_input("Diga-me o que procura no catálogo...")
+    # CHATBOX
+    p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
         with st.chat_message("user"):
