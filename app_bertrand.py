@@ -45,7 +45,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    pergunta = st.chat_input("Pergunte-me qualquer coisa sobre o catálogo...")
+    pergunta = st.chat_input("Diz-me o que queres saber sobre o catálogo...")
 
     if pergunta:
         with st.chat_message("user"):
@@ -54,35 +54,42 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # EXTRAIR NÚMERO (Essencial para páginas e anos)
+            # EXTRAIR NÚMERO (Para saber se queres filtrar páginas ou anos)
             numeros = [int(s) for s in p.split() if s.isdigit()]
             num = numeros[0] if numeros else None
 
             achou_algo = False
 
-            # --- CASO 1: FILTRO DE PÁGINAS ---
+            # --- 1. FILTRO DE PÁGINAS (Detecta se falas em páginas e tens um número) ---
             if ("págin" in p or "pagin" in p or "pp" in p) and num:
                 res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
                 if res:
-                    st.write(f"Estes livros têm menos de {num} páginas:")
+                    st.write(f"Aqui tens os livros com menos de {num} páginas:")
                     for r in res: st.write(r)
                 achou_algo = True
 
-            # --- CASO 2: FILTRO DE ANOS ---
+            # --- 2. FILTRO DE ANOS (Detecta se falas em anos e tens um número) ---
             elif ("ano" in p or "lançado" in p or "antes" in p) and num:
                 res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
                 if res:
-                    st.write(f"Títulos lançados antes de {num}:")
+                    st.write(f"Aqui tens os títulos lançados antes de {num}:")
                     for r in res: st.write(r)
                 achou_algo = True
+            
+            # --- 3. TIRAGEM GERAL (Detecta se falas em 'todos' e 'tiragem') ---
+            elif "tiragem" in p and ("todos" in p or "total" in p):
+                total = sum(d['tiragem'] for d in livros.values())
+                st.write(f"A tiragem total de todos os livros no catálogo é de **{total:,} exemplares**.")
+                achou_algo = True
 
-            # --- CASO 3: PESQUISA UNIVERSAL (Nomes, Autores, Géneros) ---
+            # --- 4. PESQUISA UNIVERSAL (Nomes, Autores, Géneros) ---
             if not achou_algo:
                 resultados = []
                 for titulo, info in livros.items():
-                    # O programa "lê" tudo o que sabe sobre o livro
+                    # O programa cria uma "memória" de tudo o que sabe sobre o livro
                     conhecimento = f"{titulo} {info['autor']} {info['género']} {info['ano']}".lower()
-                    # Compara com a pergunta (aceita erros ortográficos)
+                    
+                    # Se a tua pergunta for parecida com qualquer parte dessa memória...
                     if fuzz.partial_ratio(p, conhecimento) > 80:
                         resultados.append((titulo, info))
                 
@@ -98,7 +105,7 @@ def main():
                     achou_algo = True
 
             if not achou_algo:
-                st.write("Infelizmente não encontrei essa informação na base de dados.")
+                st.write("Não encontrei essa informação específica. Tenta perguntar por um autor, género ou número de páginas.")
 
 if __name__ == "__main__":
     main()
