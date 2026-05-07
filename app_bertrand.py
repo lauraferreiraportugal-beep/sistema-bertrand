@@ -30,11 +30,9 @@ st.markdown("""
         margin-top: 20px;
     }
 
-    /* POSICIONAMENTO MEIO-TERMO (Ajustado para o teu desenho) */
+  
     div[data-testid="stChatInput"] {
         position: relative !important;
-        bottom: auto !important;
-        /* 100px é o meio-termo ideal entre o topo e o fundo */
         margin-top: 100px !important; 
         margin-bottom: 50px !important;
     }
