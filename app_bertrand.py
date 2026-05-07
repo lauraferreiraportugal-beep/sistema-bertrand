@@ -33,7 +33,7 @@ st.markdown("""
   
     div[data-testid="stChatInput"] {
         position: relative !important;
-        margin-top: 100px !important; 
+        margin-top: 50px !important; 
         margin-bottom: 50px !important;
     }
 
