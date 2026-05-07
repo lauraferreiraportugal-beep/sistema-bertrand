@@ -10,52 +10,17 @@ st.markdown("""
     [data-testid="stSidebar"] { background-color: #002e5d; color: white; }
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] { color: white !important; font-size: 1.8em; }
     [data-testid="stSidebar"] div[data-testid="stMetricLabel"] { color: #d1d1d1 !important; }
+    h1 { color: #002e5d !important; font-family: 'Georgia', serif; text-align: center; margin-top: 20px; width: 100%; }
+    div[data-testid="stChatInput"] { position: relative !important; bottom: auto !important; margin-top: 50px !important; margin-bottom: 30px !important; }
     
-    /* TÍTULO CENTRADO */
-    h1 { 
-        color: #002e5d !important; 
-        font-family: 'Georgia', serif; 
-        text-align: center; 
-        margin-top: 20px;
-        width: 100%;
-    }
-    
-    /* POSICIONAMENTO DO CHATBOX */
-    div[data-testid="stChatInput"] { 
-        position: relative !important; 
-        bottom: auto !important; 
-        margin-top: 50px !important; 
-        margin-bottom: 30px !important; 
-    }
-    
-    /* RODAPÉ ALINHADO COM O TÍTULO (COMPENSANDO A SIDEBAR) */
     .custom-footer { 
-        position: fixed; 
-        left: 0; 
-        bottom: 0; 
-        width: 100%; 
-        text-align: center; 
-        padding: 8px 0;
-        background-color: white; 
-        border-top: 1px solid #e0e0e0; 
-        color: #1e1e1e; 
-        z-index: 999;
-        line-height: 1.2;
-        /* Este ajuste empurra o texto ligeiramente para a direita para alinhar com o título central */
-        padding-left: 250px; 
+        position: fixed; left: 0; bottom: 0; width: 100%; text-align: center; 
+        padding: 8px 0; background-color: white; border-top: 1px solid #e0e0e0; 
+        color: #1e1e1e; z-index: 999; line-height: 1.2; padding-left: 250px; 
     }
-    
-    @media (max-width: 768px) {
-        .custom-footer { padding-left: 0; }
-    }
-    
-    /* AJUSTE PARA O NOME DO AUTOR APARECER COMPLETO */
-    [data-testid="stMetricValue"] {
-        white-space: normal !important;
-        word-break: break-word !important;
-        font-size: 1.2em !important;
-    }
-    
+    @media (max-width: 768px) { .custom-footer { padding-left: 0; } }
+
+    [data-testid="stMetricValue"] { white-space: normal !important; word-break: break-word !important; font-size: 1.2em !important; }
     div[data-testid="stMetric"] { background-color: #f8f9fa; border-left: 5px solid #002e5d; padding: 15px; border-radius: 5px; }
     </style>
     """, unsafe_allow_html=True)
@@ -87,14 +52,7 @@ def main():
     with st.sidebar:
         st.markdown("# Projeto Estágio")
         st.markdown("---")
-        st.markdown("""
-        **Funcionalidades:**
-        - 🔍 Busca inteligente por Autor e Género.
-        - 📈 Consulta de Tiragens individuais.
-        - 📏 Filtros de Páginas (maior/menor).
-        - 📅 Filtros de Ano de Publicação.
-        - 📋 Listagem completa de catálogo.
-        """)
+        st.markdown("**Funcionalidades:**\n- 🔍 Busca inteligente por Autor/Género.\n- 📈 Consulta de Tiragens.\n- 📏 Filtros de Páginas.\n- 📅 Filtros de Ano.\n- 📋 Listagem de catálogo.")
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
@@ -110,27 +68,30 @@ def main():
         
         with st.chat_message("assistant"):
             resultados = livros.copy()
-            filtros_ativos = []
+            filtros_aplicados = []
 
+            # 1. Filtro de Autor
             for t, d in livros.items():
                 autor_n = d['autor'].lower()
                 if autor_n in pergunta or (autor_n.split()[-1] in pergunta and len(autor_n.split()[-1]) > 4):
                     resultados = {k: v for k, v in resultados.items() if v['autor'].lower() == autor_n}
-                    filtros_ativos.append(f"Autor: {d['autor']}")
+                    filtros_aplicados.append(f"Autor: {d['autor']}")
                     break
 
+            # 2. Filtro de Género
             generos = ["romance", "ficção", "biografia", "história", "clássico", "infantil", "thriller", "poesia"]
             for g in generos:
                 if g in pergunta:
                     resultados = {k: v for k, v in resultados.items() if g in v['género'].lower()}
-                    filtros_ativos.append(f"Género: {g.title()}")
+                    filtros_ativos = True # Marcador interno
                     break
 
+            # 3. FILTRO NUMÉRICO (CORRIGIDO)
             if num:
                 if "págin" in pergunta or "pp" in pergunta:
-                    if "mais" in pergunta or "maior" in pergunta:
+                    if "mais" in pergunta or "maior" in pergunta or "superior" in pergunta:
                         resultados = {k: v for k, v in resultados.items() if v['páginas'] > num}
-                    else:
+                    elif "menos" in pergunta or "inferior" in pergunta or "abaixo" in pergunta:
                         resultados = {k: v for k, v in resultados.items() if v['páginas'] < num}
                 elif num > 1000 and ("ano" in pergunta or "antes" in pergunta or "depois" in pergunta):
                     if "depois" in pergunta or "após" in pergunta:
@@ -138,19 +99,17 @@ def main():
                     else:
                         resultados = {k: v for k, v in resultados.items() if v['ano'] < num}
 
-            if not resultados:
-                st.warning("Não foram encontrados livros com esses critérios.")
+            # VERIFICAÇÃO DE RESULTADOS
+            if not resultados or (len(resultados) == len(livros) and not any(x in pergunta for x in ["todos", "lista"])):
+                 # Se ele não filtrou nada e não pediste "todos", é porque a pergunta falhou
+                 st.warning("Não encontrei livros que correspondam exatamente a esses critérios.")
             else:
                 st.write(f"### Resultados encontrados ({len(resultados)})")
-                if filtros_ativos:
-                    st.caption(f"Filtros aplicados: {', '.join(filtros_ativos)}")
                 
                 if "tiragem" in pergunta:
                     for t, d in resultados.items():
-                        st.write(f"📖 **{t}**")
-                        st.write(f"Tiragem: **{d['tiragem']:,} exemplares**")
-                        st.divider()
-                elif "todos" in pergunta or "lista" in pergunta:
+                        st.write(f"📖 **{t}** — Tiragem: **{d['tiragem']:,} ex.**")
+                elif any(x in pergunta for x in ["todos", "lista"]):
                     for t, d in resultados.items():
                         st.write(f"📖 **{t}** — {d['autor']} ({d['ano']})")
                 else:
@@ -163,13 +122,7 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    # RODAPÉ ALINHADO
-    st.markdown("""
-        <div class="custom-footer">
-            <div style="font-size: 0.9em;">© 2026 Bertrand Editora | Inteligência Editorial</div>
-            <div style="color: #888; font-size: 0.75em; margin-top: 2px;">Assistente Inteligente.</div>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("""<div class="custom-footer"><div>© 2026 Bertrand Editora | Inteligência Editorial</div><div style="color: #888; font-size: 0.75em; margin-top: 2px;">Assistente Inteligente.</div></div>""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
