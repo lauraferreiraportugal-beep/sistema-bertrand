@@ -25,7 +25,7 @@ def main():
     st.sidebar.write("- 'Resumo do catálogo'")
     st.sidebar.write("- 'Custo de 500 páginas'")
     
-    st.title("🧠 Bertrand Editorial Intelligence")
+    st.title(" Bertrand Editorial Intelligence")
     st.markdown("##### Assistente para Apoio à Decisão e Planeamento")
 
     # Base de Dados
