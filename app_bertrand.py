@@ -18,26 +18,26 @@ st.markdown("""
         color: white !important;
         font-size: 1.8em;
     }
-    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] {
-        color: #d1d1d1 !important;
-    }
     
     /* TÍTULO */
     h1 { 
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: 20px;
+        margin-top: 0px;
     }
 
-  
+    /* O SEGREDO: MATAR A POSIÇÃO FIXA DO CHAT DE VEZ */
+    .stChatInput {
+        position: static !important;
+    }
     div[data-testid="stChatInput"] {
-        margin-top: 300px;
-        width: 100%;
-        text-align: center;
+        position: relative !important;
+        bottom: auto !important;
+        margin-top: 0px !important;
     }
 
-    /* RODAPÉ NO FIM - PRESERVADO */
+    /* RODAPÉ NO FIM */
     .custom-footer {
         position: fixed;
         left: 0;
@@ -49,18 +49,6 @@ st.markdown("""
         border-top: 1px solid #e0e0e0;
         color: #1e1e1e;
         z-index: 999;
-    }
-    .footer-light {
-        color: #888888;
-        font-size: 0.85em;
-    }
-
-    /* MÉTRICAS DE RESULTADOS */
-    div[data-testid="stMetric"] { 
-        background-color: #f8f9fa; 
-        border-left: 5px solid #002e5d; 
-        padding: 15px; 
-        border-radius: 5px; 
     }
     </style>
     """, unsafe_allow_html=True)
@@ -97,12 +85,17 @@ def main():
         st.metric("Total Tiragem", f"{sum(d['tiragem'] for d in livros.values()):,}")
         st.markdown("---")
         st.write("📌 **Projeto de Estágio**")
-        st.caption("Ficha Técnica Editorial")
 
-    # TÍTULO
+    # --- ESTRUTURA VISUAL ---
+    
     st.title("SISTEMA DE GESTÃO EDITORIAL")
-
-    # CHATBOX - POSIÇÃO MEIO-TERMO
+    
+    # 1. Primeiro Espaçador (Empurra o chat para baixo do título)
+    st.write("")
+    st.write("")
+    st.write("")
+    
+    # 2. O CHATBOX (Agora no fluxo central)
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -110,34 +103,33 @@ def main():
             st.write(p)
         
         pergunta = p.lower()
-        numeros = [int(s) for s in pergunta.split() if s.isdigit()]
-        num = numeros[0] if numeros else None
-        respondido = False
-
         with st.chat_message("assistant"):
-            # Lógica de resposta (Universal)
-            if not respondido:
-                resultados = []
-                for t, d in livros.items():
-                    info = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
-                    if fuzz.partial_ratio(pergunta, info) > 80 or pergunta in info:
-                        resultados.append((t, d))
-                
-                if resultados:
-                    for t, d in resultados:
-                        st.write(f"### {t}")
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric("Autor", d['autor'])
-                        c2.metric("Ano", d['ano'])
-                        c3.metric("Páginas", d['páginas'])
-                        st.divider()
-                    respondido = True
+            # Lógica de resposta universal
+            resultados = []
+            for t, d in livros.items():
+                info = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
+                if fuzz.partial_ratio(pergunta, info) > 80 or pergunta in info:
+                    resultados.append((t, d))
+            
+            if resultados:
+                for t, d in resultados:
+                    st.write(f"### {t}")
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Autor", d['autor'])
+                    c2.metric("Ano", d['ano'])
+                    c3.metric("Páginas", d['páginas'])
+                    st.divider()
+            else:
+                st.warning("Não encontrado.")
 
-    # RODAPÉ FIXO
+    # 3. Segundo Espaçador (Cria espaço para o rodapé)
+    for _ in range(10): st.write("")
+
+    # RODAPÉ
     st.markdown("""
         <div class="custom-footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
-            <span class="footer-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
+            <span style="color: #888; font-size: 0.85em;">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
         </div>
         """, unsafe_allow_html=True)
 
