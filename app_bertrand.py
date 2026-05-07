@@ -20,9 +20,6 @@ st.markdown("""
         color: white !important;
         font-size: 1.5em;
     }
-    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] {
-        color: #d1d1d1 !important;
-    }
     
     /* Estilo das Métricas Centrais */
     div[data-testid="stMetric"] { 
@@ -32,24 +29,28 @@ st.markdown("""
         border-radius: 5px; 
     }
     
-    h1, h3 { 
+    h1 { 
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
+        margin-bottom: 0px;
     }
 
-    /* Rodapé */
-    .footer {
-        position: relative;
-        margin-top: 50px;
-        width: 100%;
+    /* Estilo do cabeçalho de informações (antigo rodapé) */
+    .header-info {
         text-align: center;
-        padding: 20px;
-        border-top: 1px solid #e0e0e0;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 20px;
     }
-    .footer-light {
+    .header-light {
         color: #888888;
         font-size: 0.85em;
+    }
+
+    /* Ajuste para o Chat Input não ficar colado ao fundo e subir */
+    .stChatInput {
+        padding-bottom: 50px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -79,33 +80,30 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # --- BARRA LATERAL (ZONA AZUL) COM INFORMAÇÃO PERTINENTE ---
+    # Sidebar
     with st.sidebar:
         try:
             st.image("logo.png", width=180)
         except:
             st.subheader("BERTRAND")
-        
         st.markdown("### 📊 Visão Geral")
-        
-        # Cálculos pertinentes
-        total_livros = len(livros)
-        tiragem_total = sum(d['tiragem'] for d in livros.values())
-        media_tiragem = tiragem_total / total_livros
-        
-        st.metric("Total de Títulos", total_livros)
-        st.metric("Tiragem Média", f"{int(media_tiragem):,}")
-        st.metric("Volume Histórico", f"{tiragem_total:,}")
-        
+        st.metric("Total de Títulos", len(livros))
+        st.metric("Tiragem Média", f"{int(sum(d['tiragem'] for d in livros.values())/len(livros)):,}")
         st.markdown("---")
-        st.write("📌 **Projeto de Estágio**")
-        st.caption("Ficha Técnica e Apoio à Decisão Editorial")
+        st.caption("Ficha Técnica Editorial")
 
-    # --- ZONA CENTRAL ---
+    # Título Principal
     st.title("SISTEMA DE GESTÃO EDITORIAL")
-    
-    # O chatbox (st.chat_input) por padrão fica no fundo, 
-    # mas o Streamlit organiza o fluxo de cima para baixo.
+
+    # --- INFORMAÇÕES DE COPYRIGHT E ASSISTENTE (AGORA NO TOPO) ---
+    st.markdown("""
+        <div class="header-info">
+            © 2024 Bertrand Editora | Inteligência Editorial<br>
+            <span class="header-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # --- CHATBOX (ST.CHAT_INPUT) ---
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -118,7 +116,6 @@ def main():
         respondido = False
 
         with st.chat_message("assistant"):
-            # Lógica de resposta (Mantida e consolidada)
             if num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
                 if "mais" in pergunta or "maior" in pergunta:
                     res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
@@ -156,15 +153,7 @@ def main():
                     respondido = True
 
             if not respondido:
-                st.warning("Não encontrei dados para esta consulta.")
-
-    # Rodapé
-    st.markdown("""
-        <div class="footer">
-            © 2024 Bertrand Editora | Inteligência Editorial<br>
-            <span class="footer-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
-        </div>
-        """, unsafe_allow_html=True)
+                st.warning("Informação não localizada.")
 
 if __name__ == "__main__":
     main()
