@@ -15,7 +15,7 @@ st.markdown("""
         color: white; 
     }
     
-    /* MÉTRICAS DA SIDEBAR EM BRANCO - PRESERVADAS */
+    /* MÉTRICAS DA SIDEBAR EM BRANCO */
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] {
         color: white !important;
         font-size: 1.8em;
@@ -29,22 +29,23 @@ st.markdown("""
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: 0px;
+        margin-top: -30px;
+        padding-bottom: 10px;
     }
 
-    /* FORÇAR O CHATBOX PARA CIMA (MÉTODO ULTRA) */
-    /* Removemos a posição fixa que o Streamlit impõe ao chat_input */
-    footer {display: none !important;}
-    
+    /* MATAR O POSICIONAMENTO FIXO DO CHAT */
+    /* Este bloco é o que vai garantir que ele sobe */
+    .stChatInput {
+        position: static !important;
+    }
     div[data-testid="stChatInput"] {
         position: relative !important;
         bottom: auto !important;
-        padding-top: 20px !important;
-        padding-bottom: 20px !important;
-        margin-bottom: 50px !important;
+        margin-top: 0px !important;
+        margin-bottom: 20px !important;
     }
 
-    /* RODAPÉ NO FIM - PRESERVADO */
+    /* RODAPÉ NO FIM */
     .custom-footer {
         position: fixed;
         left: 0;
@@ -54,7 +55,6 @@ st.markdown("""
         padding: 10px;
         background-color: white;
         border-top: 1px solid #e0e0e0;
-        color: #1e1e1e;
         z-index: 999;
     }
     .footer-light {
@@ -97,7 +97,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Métricas e títulos preservados)
+    # Sidebar (Títulos e Métricas garantidos)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -105,11 +105,14 @@ def main():
         st.markdown("---")
         st.caption("Ficha Técnica Editorial")
 
-    # 1. TÍTULO
+    # TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # 2. CHATBOX (Agora forçado a aparecer no fluxo normal, logo abaixo do título)
-    p = st.chat_input("Diga-me o que procura no catálogo...")
+    # CONTENTOR PARA O CHAT (Para o obrigar a ficar no topo)
+    chat_container = st.container()
+
+    with chat_container:
+        p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
         with st.chat_message("user"):
@@ -122,11 +125,9 @@ def main():
 
         with st.chat_message("assistant"):
             if num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
-                if "mais" in pergunta or "maior" in pergunta:
-                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
-                else:
-                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
-                st.write(f"Resultados para filtro de páginas ({num}):")
+                cond = (lambda x: x > num) if "mais" in pergunta or "maior" in pergunta else (lambda x: x < num)
+                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if cond(d['páginas'])]
+                st.write(f"Resultados para páginas ({num}):")
                 for r in res: st.write(r)
                 respondido = True
 
@@ -147,7 +148,7 @@ def main():
                         st.divider()
                     respondido = True
 
-    # 3. RODAPÉ (Fixo no fundo)
+    # RODAPÉ FIXO
     st.markdown("""
         <div class="custom-footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
