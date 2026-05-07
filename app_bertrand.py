@@ -1,4 +1,5 @@
 import streamlit as st
+from collections import Counter
 
 # 1. Configuração da Página
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="🧠", layout="wide")
@@ -14,16 +15,15 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
-    # --- CORREÇÃO DE INDENTAÇÃO NA SIDEBAR ---
     try:
         st.sidebar.image("logo.png", width=200)
     except:
         st.sidebar.title("Bertrand")
-
+        
     st.sidebar.title("Comandos Úteis")
+    st.sidebar.write("- 'Quem tem mais livros?'")
     st.sidebar.write("- 'Resumo do catálogo'")
-    st.sidebar.write("- 'Custo de 300 páginas'")
-    st.sidebar.write("- 'Média de tiragem de Ficção'")
+    st.sidebar.write("- 'Custo de 500 páginas'")
     
     st.title("🧠 Bertrand Editorial Intelligence")
     st.markdown("##### Assistente para Apoio à Decisão e Planeamento")
@@ -61,47 +61,36 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # 1. RESUMO
-            if "resumo" in p or "catálogo" in p:
-                total_livros = len(livros)
-                total_tiragem = sum(d['tiragem'] for d in livros.values())
-                st.write(f"Atualmente gerimos **{total_livros} títulos**.")
-                st.write(f"Volume total de impressões histórico: **{total_tiragem:,} exemplares**.")
+            # LÓGICA DE CÁLCULO E RANKING
+            if "mais livros" in p:
+                contagem = Counter([d['autor'] for d in livros.values()])
+                autor_top, qtd = contagem.most_common(1)[0]
+                st.write(f"O autor com mais títulos é **{autor_top}** ({qtd} livros).")
 
-            # 2. CUSTO
-            elif "custo" in p or "preço" in p:
-                try:
-                    pags = int(''.join(filter(str.isdigit, p)))
-                    custo_estimado = pags * 0.03
-                    st.write(f"Para um livro de **{pags} páginas**, o custo base estimado é de **{custo_estimado:.2f}€** por unidade.")
-                except:
-                    st.write("Por favor, indique o número de páginas.")
+            elif "resumo" in p:
+                st.write(f"Catálogo atual: **{len(livros)} títulos**.")
+                st.write(f"Tiragem total: **{sum(d['tiragem'] for d in livros.values()):,} exemplares**.")
 
-            # 3. TIRAGEM / MÉDIAS
-            elif "tiragem" in p or "impressões" in p or "méd" in p:
-                filtro = next((g for t, d in livros.items() if g.lower() in p), None)
-                autor = next((d['autor'] for t, d in livros.items() if d['autor'].lower() in p), None)
-                
-                if autor:
-                    dados_autor = [d['tiragem'] for d in livros.values() if d['autor'] == autor]
-                    media = sum(dados_autor) / len(dados_autor)
-                    st.write(f"O autor **{autor}** tem uma média de **{int(media):,} exemplares**.")
-                elif filtro:
-                    dados_gen = [d['tiragem'] for d in livros.values() if d['género'] == filtro]
-                    st.write(f"Média de tiragem para **{filtro}**: **{int(sum(dados_gen)/len(dados_gen)):,}**.")
-
-            # 4. PÁGINAS
-            elif "páginas" in p:
+            elif "custo" in p:
                 try:
                     num = int(''.join(filter(str.isdigit, p)))
-                    if "menos" in p or "abaixo" in p:
-                        res = [f"📖 {t}" for t, d in livros.items() if d['páginas'] < num]
-                        st.write(f"Livros com menos de {num} páginas:")
-                        for r in res: st.write(r)
-                except:
-                    st.write("Indique o limite de páginas.")
+                    st.write(f"Custo estimado para {num} páginas: **{num * 0.03:.2f}€/unidade**.")
+                except: st.write("Indique o número de páginas.")
+
+            # LÓGICA DE PESQUISA UNIVERSAL (A "MAGIA" PARA TER TODAS AS RESPOSTAS)
             else:
-                st.write("Ainda estou a aprender. Tente perguntar por 'tiragem de Saramago' ou 'custo de 200 páginas'.")
+                resultados = []
+                for titulo, info in livros.items():
+                    # Se a palavra que o utilizador escreveu estiver no Título, Autor ou Género
+                    if p in titulo.lower() or p in info['autor'].lower() or p in info['género'].lower():
+                        resultados.append(f"📖 **{titulo}** | {info['autor']} | {info['género']} | {info['páginas']} pág. | Tiragem: {info['tiragem']:,}")
+                
+                if resultados:
+                    st.write("Encontrei estas informações na base de dados:")
+                    for r in resultados:
+                        st.write(r)
+                else:
+                    st.write("Infelizmente não encontrei essa informação. Tente pesquisar por um nome de autor, título ou género específico.")
 
 if __name__ == "__main__":
     main()
