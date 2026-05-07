@@ -20,7 +20,7 @@ st.markdown("""
         width: 100%;
     }
     
-    /* POSICIONAMENTO DO CHATBOX NO MEIO */
+    /* POSICIONAMENTO DO CHATBOX */
     div[data-testid="stChatInput"] { 
         position: relative !important; 
         bottom: auto !important; 
@@ -28,19 +28,19 @@ st.markdown("""
         margin-bottom: 30px !important; 
     }
     
-    /* RODAPÉ PERFEITAMENTE CENTRADO */
+    /* RODAPÉ REFINADO E CENTRADO */
     .custom-footer { 
         position: fixed; 
         left: 0; 
         bottom: 0; 
         width: 100%; 
         text-align: center; 
-        padding: 20px 0; 
+        padding: 8px 0; /* Diminuído para o retângulo branco ser menor */
         background-color: white; 
         border-top: 1px solid #e0e0e0; 
         color: #1e1e1e; 
         z-index: 999;
-        display: block; /* Garante que o text-align center funcione em toda a linha */
+        line-height: 1.2;
     }
     
     /* AJUSTE PARA O NOME DO AUTOR APARECER COMPLETO */
@@ -157,11 +157,11 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    # RODAPÉ PERFEITAMENTE CENTRADO
+    # RODAPÉ FINO E CENTRADO
     st.markdown("""
         <div class="custom-footer">
-            <div style="width: 100%;">© 2026 Bertrand Editora | Inteligência Editorial</div>
-            <div style="color: #888; font-size: 0.85em; margin-top: 5px;">Assistente Inteligente.</div>
+            <div style="font-size: 0.9em;">© 2026 Bertrand Editora | Inteligência Editorial</div>
+            <div style="color: #888; font-size: 0.75em; margin-top: 2px;">Assistente Inteligente.</div>
         </div>
         """, unsafe_allow_html=True)
 
