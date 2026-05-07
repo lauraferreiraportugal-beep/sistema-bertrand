@@ -1,7 +1,8 @@
 import streamlit as st
 from thefuzz import fuzz
+from collections import Counter
 
-# 1. Configuração e Estilo Bertrand
+# 1. Configuração e Estilo Bertrand (PRESERVADO)
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="wide")
 st.markdown("""
     <style>
@@ -14,14 +15,18 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
+    # Logótipo na Sidebar (PRESERVADO com segurança)
     try:
         st.sidebar.image("logo.png", width=200)
     except:
         st.sidebar.title("Bertrand")
     
+    st.sidebar.markdown("---")
+    st.sidebar.info("Assistente Inteligente Acumulativo - Versão de Gestão.")
+
     st.title("SISTEMA DE GESTÃO EDITORIAL")
     
-    # A tua Base de Dados (O conhecimento do programa)
+    # Base de Dados (PRESERVADA)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -45,7 +50,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    pergunta = st.chat_input("Diz-me o que queres saber sobre o catálogo...")
+    pergunta = st.chat_input("Como posso ajudar a Bertrand hoje?")
 
     if pergunta:
         with st.chat_message("user"):
@@ -54,58 +59,59 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # EXTRAIR NÚMERO (Para saber se queres filtrar páginas ou anos)
+            # Extração de números (Páginas/Anos)
             numeros = [int(s) for s in p.split() if s.isdigit()]
             num = numeros[0] if numeros else None
+            respondido = False
 
-            achou_algo = False
+            # --- A) COMANDO: LISTA/TODOS ---
+            if "lista" in p or "todos" in p:
+                st.write("### Catálogo Completo:")
+                for t in sorted(livros.keys()):
+                    st.write(f"📖 **{t}** — {livros[t]['autor']}")
+                respondido = True
 
-            # --- 1. FILTRO DE PÁGINAS (Detecta se falas em páginas e tens um número) ---
-            if ("págin" in p or "pagin" in p or "pp" in p) and num:
+            # --- B) FILTRO: PÁGINAS ---
+            elif num and ("págin" in p or "pagin" in p or "pp" in p):
                 res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
-                if res:
-                    st.write(f"Aqui tens os livros com menos de {num} páginas:")
-                    for r in res: st.write(r)
-                achou_algo = True
+                st.write(f"Livros com menos de {num} páginas:")
+                for r in res: st.write(r)
+                respondido = True
 
-            # --- 2. FILTRO DE ANOS (Detecta se falas em anos e tens um número) ---
-            elif ("ano" in p or "lançado" in p or "antes" in p) and num:
+            # --- C) FILTRO: ANOS ---
+            elif num and ("ano" in p or "antes" in p or "lançado" in p):
                 res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
-                if res:
-                    st.write(f"Aqui tens os títulos lançados antes de {num}:")
-                    for r in res: st.write(r)
-                achou_algo = True
-            
-            # --- 3. TIRAGEM GERAL (Detecta se falas em 'todos' e 'tiragem') ---
-            elif "tiragem" in p and ("todos" in p or "total" in p):
-                total = sum(d['tiragem'] for d in livros.values())
-                st.write(f"A tiragem total de todos os livros no catálogo é de **{total:,} exemplares**.")
-                achou_algo = True
+                st.write(f"Livros antes de {num}:")
+                for r in res: st.write(r)
+                respondido = True
 
-            # --- 4. PESQUISA UNIVERSAL (Nomes, Autores, Géneros) ---
-            if not achou_algo:
+            # --- D) FILTRO: TIRAGEM TOTAL ---
+            elif "tiragem" in p and ("total" in p or "todos" in p):
+                total = sum(d['tiragem'] for d in livros.values())
+                st.write(f"A tiragem total registada é de **{total:,} exemplares**.")
+                respondido = True
+
+            # --- E) PESQUISA UNIVERSAL (Com métricas visuais) ---
+            if not respondido:
                 resultados = []
-                for titulo, info in livros.items():
-                    # O programa cria uma "memória" de tudo o que sabe sobre o livro
-                    conhecimento = f"{titulo} {info['autor']} {info['género']} {info['ano']}".lower()
-                    
-                    # Se a tua pergunta for parecida com qualquer parte dessa memória...
-                    if fuzz.partial_ratio(p, conhecimento) > 80:
-                        resultados.append((titulo, info))
+                for t, d in livros.items():
+                    conhecimento = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
+                    if fuzz.partial_ratio(p, conhecimento) > 80 or p in conhecimento:
+                        resultados.append((t, d))
                 
                 if resultados:
                     for t, d in resultados:
                         st.write(f"### {t}")
                         c1, c2, c3 = st.columns(3)
                         c1.metric("Autor", d['autor'])
-                        c2.metric("Páginas", d['páginas'])
-                        c3.metric("Ano", d['ano'])
-                        st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
+                        c2.metric("Ano", d['ano'])
+                        c3.metric("Páginas", d['páginas'])
+                        st.write(f"**Tiragem:** {d['tiragem']:,} ex | **Género:** {d['género']}")
                         st.divider()
-                    achou_algo = True
+                    respondido = True
 
-            if not achou_algo:
-                st.write("Não encontrei essa informação específica. Tenta perguntar por um autor, género ou número de páginas.")
+            if not respondido:
+                st.write("Não encontrei esses dados. Tente simplificar a pesquisa ou use palavras-chave.")
 
 if __name__ == "__main__":
     main()
