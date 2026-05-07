@@ -8,7 +8,7 @@ st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* BARRA LATERAL AZUL - PRESERVADA */
+    /* BARRA LATERAL AZUL - TUDO PRESERVADO */
     [data-testid="stSidebar"] { 
         background-color: #002e5d; 
         color: white; 
@@ -18,37 +18,38 @@ st.markdown("""
         color: white !important;
         font-size: 1.8em;
     }
+    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] {
+        color: #d1d1d1 !important;
+    }
     
     /* TÍTULO */
     h1 { 
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: 0px;
+        margin-bottom: 50px;
     }
 
-    /* O SEGREDO: MATAR A POSIÇÃO FIXA DO CHAT DE VEZ */
-    .stChatInput {
-        position: static !important;
-    }
-    div[data-testid="stChatInput"] {
-        position: relative !important;
-        bottom: auto !important;
-        margin-top: 0px !important;
-    }
-
-    /* RODAPÉ NO FIM */
+    /* RODAPÉ FIXO NO FIM */
     .custom-footer {
         position: fixed;
         left: 0;
         bottom: 0;
         width: 100%;
         text-align: center;
-        padding: 10px;
+        padding: 15px;
         background-color: white;
         border-top: 1px solid #e0e0e0;
         color: #1e1e1e;
         z-index: 999;
+    }
+
+    /* ESTILO DAS MÉTRICAS DE RESULTADO */
+    div[data-testid="stMetric"] { 
+        background-color: #f8f9fa; 
+        border-left: 5px solid #002e5d; 
+        padding: 15px; 
+        border-radius: 5px; 
     }
     </style>
     """, unsafe_allow_html=True)
@@ -78,7 +79,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Preservada)
+    # Sidebar
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -86,46 +87,35 @@ def main():
         st.markdown("---")
         st.write("📌 **Projeto de Estágio**")
 
-    # --- ESTRUTURA VISUAL ---
-    
+    # 1. TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
-    
-    # 1. Primeiro Espaçador (Empurra o chat para baixo do título)
-    st.write("")
-    st.write("")
-    st.write("")
-    
-    # 2. O CHATBOX (Agora no fluxo central)
-    p = st.chat_input("Diga-me o que procura no catálogo...")
 
-    if p:
-        with st.chat_message("user"):
-            st.write(p)
+    # 2. ESPAÇO PARA O MEIO
+    st.write("##")
+    st.write("##")
+    
+    # 3. BARRA DE PESQUISA (Substituí o chat_input por text_input para ele ficar no meio!)
+    pergunta = st.text_input("", placeholder="Diga-me o que procura no catálogo...", label_visibility="collapsed")
+
+    if pergunta:
+        p = pergunta.lower()
+        # Lógica de resposta universal
+        resultados = []
+        for t, d in livros.items():
+            info = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
+            if fuzz.partial_ratio(p, info) > 80 or p in info:
+                resultados.append((t, d))
         
-        pergunta = p.lower()
-        with st.chat_message("assistant"):
-            # Lógica de resposta universal
-            resultados = []
-            for t, d in livros.items():
-                info = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
-                if fuzz.partial_ratio(pergunta, info) > 80 or pergunta in info:
-                    resultados.append((t, d))
-            
-            if resultados:
-                for t, d in resultados:
-                    st.write(f"### {t}")
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Autor", d['autor'])
-                    c2.metric("Ano", d['ano'])
-                    c3.metric("Páginas", d['páginas'])
-                    st.divider()
-            else:
-                st.warning("Não encontrado.")
+        if resultados:
+            for t, d in resultados:
+                st.write(f"### {t}")
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Autor", d['autor'])
+                c2.metric("Ano", d['ano'])
+                c3.metric("Páginas", d['páginas'])
+                st.divider()
 
-    # 3. Segundo Espaçador (Cria espaço para o rodapé)
-    for _ in range(10): st.write("")
-
-    # RODAPÉ
+    # 4. RODAPÉ FIXO
     st.markdown("""
         <div class="custom-footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
