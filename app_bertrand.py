@@ -21,7 +21,7 @@ def main():
         st.sidebar.title("Bertrand")
     
     st.sidebar.markdown("---")
-    st.sidebar.info("Assistente Inteligente Acumulativo - Gestão de Inventário.")
+    st.sidebar.info("Assistente Inteligente de Gestão Editorial - Análise Completa.")
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
     
@@ -49,78 +49,98 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    pergunta = st.chat_input("Diga-me o que procura...")
+    p = st.chat_input("Pergunte qualquer coisa (ex: 'livros de Saramago', 'mais de 300 páginas', 'tiragem total'...)")
 
-    if pergunta:
+    if p:
         with st.chat_message("user"):
-            st.write(pergunta)
+            st.write(p)
         
-        p = pergunta.lower()
-        
+        pergunta = p.lower()
+        numeros = [int(s) for s in pergunta.split() if s.isdigit()]
+        num = numeros[0] if numeros else None
+        respondido = False
+
         with st.chat_message("assistant"):
-            numeros = [int(s) for s in p.split() if s.isdigit()]
-            num = numeros[0] if numeros else None
-            respondido = False
-
-            # --- A) FILTRO DINÂMICO: PÁGINAS (MAIS OU MENOS) ---
-            if num and ("págin" in p or "pagin" in p or "pp" in p):
-                if "mais" in p or "maior" in p or "acima" in p:
-                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
-                    texto = "mais"
+            
+            # 1. LÓGICA DE TIRAGENS TOTAIS/MÉDIAS
+            if "tiragem" in pergunta or "impressões" in pergunta:
+                if "total" in pergunta or "todos" in pergunta:
+                    total = sum(d['tiragem'] for d in livros.values())
+                    st.write(f"A tiragem total do catálogo é de **{total:,} exemplares**.")
+                    respondido = True
                 else:
-                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
-                    texto = "menos"
-                
-                st.write(f"Livros com {texto} de {num} páginas:")
-                for r in res: st.write(r)
-                respondido = True
+                    # Tenta encontrar se o utilizador falou de um autor ou género
+                    alvo = next((v for v in ["saramago", "pessoa", "eça", "queirós", "ficção", "romance", "clássico", "biografia"] if v in pergunta), None)
+                    res = [d['tiragem'] for t, d in livros.items() if alvo and (alvo in d['autor'].lower() or alvo in d['género'].lower())]
+                    if res:
+                        st.write(f"A tiragem total para essa pesquisa é de **{sum(res):,} exemplares**.")
+                        st.write(f"Média por livro: **{int(sum(res)/len(res)):,}**.")
+                        respondido = True
 
-            # --- B) FILTRO DINÂMICO: ANOS (ANTES OU DEPOIS) ---
-            elif num and ("ano" in p or "lançado" in p):
-                if "depois" in p or "após" in p or "mais recente" in p:
-                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] > num]
-                    texto = "depois de"
-                else:
-                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
-                    texto = "antes de"
-                
-                st.write(f"Livros {texto} {num}:")
-                for r in res: st.write(r)
-                respondido = True
-
-            # --- C) COMANDOS GERAIS (LISTA, TIRAGEM, RANKING) ---
-            elif "lista" in p or "todos" in p:
-                st.write("### Catálogo Completo:")
-                for t in sorted(livros.keys()):
-                    st.write(f"📖 **{t}** — {livros[t]['autor']}")
-                respondido = True
-
-            elif "tiragem" in p and ("total" in p or "todos" in p):
-                total = sum(d['tiragem'] for d in livros.values())
-                st.write(f"A tiragem total registada é de **{total:,} exemplares**.")
-                respondido = True
-
-            # --- D) PESQUISA UNIVERSAL (MÉTRICAS) ---
-            if not respondido:
-                resultados = []
-                for t, d in livros.items():
-                    conhecimento = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
-                    if fuzz.partial_ratio(p, conhecimento) > 80 or p in conhecimento:
-                        resultados.append((t, d))
-                
-                if resultados:
-                    for t, d in resultados:
-                        st.write(f"### {t}")
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric("Autor", d['autor'])
-                        c2.metric("Ano", d['ano'])
-                        c3.metric("Páginas", d['páginas'])
-                        st.write(f"**Tiragem:** {d['tiragem']:,} ex | **Género:** {d['género']}")
-                        st.divider()
+            # 2. LÓGICA DE FILTROS NUMÉRICOS (Páginas e Anos)
+            if not respondido and num:
+                # Páginas
+                if "págin" in pergunta or "pagin" in pergunta or "pp" in pergunta:
+                    if "mais" in pergunta or "maior" in pergunta or "acima" in pergunta:
+                        res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
+                        st.write(f"Livros com mais de {num} páginas:")
+                    else:
+                        res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
+                        st.write(f"Livros com menos de {num} páginas:")
+                    for r in res: st.write(r)
+                    respondido = True
+                # Anos
+                elif "ano" in pergunta or "lançado" in pergunta:
+                    if "depois" in pergunta or "após" in pergunta or "recente" in pergunta:
+                        res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] > num]
+                        st.write(f"Livros lançados depois de {num}:")
+                    else:
+                        res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
+                        st.write(f"Livros lançados antes de {num}:")
+                    for r in res: st.write(r)
                     respondido = True
 
+            # 3. LÓGICA DE CONTAGEM E LISTAGEM
             if not respondido:
-                st.write("Infelizmente não consegui processar esse pedido. Tente ser mais específico.")
+                if "lista" in pergunta or "quais" in pergunta or "diz me" in pergunta or "mostra" in pergunta or "todos" in pergunta:
+                    # Procura por Autor ou Género na pergunta
+                    resultados = []
+                    for t, d in livros.items():
+                        # Super busca: título, autor ou género
+                        if fuzz.partial_ratio(pergunta, t.lower()) > 80 or \
+                           fuzz.partial_ratio(pergunta, d['autor'].lower()) > 80 or \
+                           fuzz.partial_ratio(pergunta, d['género'].lower()) > 80:
+                            resultados.append((t, d))
+                    
+                    if resultados:
+                        st.write(f"Encontrei {len(resultados)} resultados:")
+                        for t, d in resultados:
+                            with st.expander(f"📖 {t} ({d['autor']})"):
+                                c1, c2 = st.columns(2)
+                                c1.metric("Páginas", d['páginas'])
+                                c1.metric("Ano", d['ano'])
+                                c2.metric("Tiragem", f"{d['tiragem']:,}")
+                                c2.write(f"**Género:** {d['género']}")
+                        respondido = True
+
+            # 4. BUSCA UNITÁRIA (Fuzzy Matching para tudo o resto)
+            if not respondido:
+                # Se escreveu apenas um nome (ex: "Saramago")
+                for t, d in livros.items():
+                    if fuzz.partial_ratio(pergunta, t.lower()) > 85 or fuzz.partial_ratio(pergunta, d['autor'].lower()) > 85:
+                        st.subheader(t)
+                        col1, col2, col3 = st.columns(3)
+                        col1.metric("Autor", d['autor'])
+                        col2.metric("Páginas", d['páginas'])
+                        col3.metric("Ano", d['ano'])
+                        st.write(f"**Tiragem:** {d['tiragem']:,} exemplares | **Género:** {d['género']}")
+                        respondido = True
+                        break
+
+            if not respondido:
+                st.warning("Não consegui encontrar dados para essa pergunta. Tente pesquisar por autor, género, páginas ou tiragem.")
+
+    st.markdown("<br><hr><center>© 2024 Bertrand Editora | Inteligência Editorial</center>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
