@@ -14,10 +14,12 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
+    # --- CORREÇÃO DE INDENTAÇÃO NA SIDEBAR ---
     try:
-    st.sidebar.image("logo.png", width=200)
-except:
-    st.sidebar.title("Bertrand")
+        st.sidebar.image("logo.png", width=200)
+    except:
+        st.sidebar.title("Bertrand")
+
     st.sidebar.title("Comandos Úteis")
     st.sidebar.write("- 'Resumo do catálogo'")
     st.sidebar.write("- 'Custo de 300 páginas'")
@@ -59,49 +61,47 @@ except:
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # 1. RESUMO GERAL (DASHBOARD)
+            # 1. RESUMO
             if "resumo" in p or "catálogo" in p:
                 total_livros = len(livros)
                 total_tiragem = sum(d['tiragem'] for d in livros.values())
                 st.write(f"Atualmente gerimos **{total_livros} títulos**.")
                 st.write(f"Volume total de impressões histórico: **{total_tiragem:,} exemplares**.")
-                st.info("Género mais frequente no catálogo: **Ficção**")
 
-            # 2. ESTIMATIVA DE CUSTO (Lógica Editorial)
+            # 2. CUSTO
             elif "custo" in p or "preço" in p:
                 try:
                     pags = int(''.join(filter(str.isdigit, p)))
-                    custo_estimado = pags * 0.03 # Exemplo: 0.03€ por página
-                    st.write(f"Para um livro de **{pags} páginas**, o custo base de produção estimado é de **{custo_estimado:.2f}€** por unidade (papel/impressão padrão).")
-                except: st.write("Por favor, indique o número de páginas para eu calcular o custo.")
+                    custo_estimado = pags * 0.03
+                    st.write(f"Para um livro de **{pags} páginas**, o custo base estimado é de **{custo_estimado:.2f}€** por unidade.")
+                except:
+                    st.write("Por favor, indique o número de páginas.")
 
-            # 3. ANÁLISE DE TIRAGEM E RECOMENDAÇÃO (O teu pedido original melhorado)
+            # 3. TIRAGEM / MÉDIAS
             elif "tiragem" in p or "impressões" in p or "méd" in p:
-                # Verifica se falou em Género ou Autor
                 filtro = next((g for t, d in livros.items() if g.lower() in p), None)
                 autor = next((d['autor'] for t, d in livros.items() if d['autor'].lower() in p), None)
                 
                 if autor:
                     dados_autor = [d['tiragem'] for d in livros.values() if d['autor'] == autor]
                     media = sum(dados_autor) / len(dados_autor)
-                    st.write(f"O autor **{autor}** tem uma média de **{int(media):,} exemplares** por título.")
-                    st.success(f"Sugestão para novo título: Tiragem inicial de **{int(media * 1.1):,}** (Média + 10% margem de segurança).")
+                    st.write(f"O autor **{autor}** tem uma média de **{int(media):,} exemplares**.")
                 elif filtro:
                     dados_gen = [d['tiragem'] for d in livros.values() if d['género'] == filtro]
-                    st.write(f"A média de tiragem para o género **{filtro}** é de **{int(sum(dados_gen)/len(dados_gen)):,}** exemplares.")
+                    st.write(f"Média de tiragem para **{filtro}**: **{int(sum(dados_gen)/len(dados_gen)):,}**.")
 
-            # 4. FILTRO DE PÁGINAS (Rápido)
+            # 4. PÁGINAS
             elif "páginas" in p:
                 try:
                     num = int(''.join(filter(str.isdigit, p)))
                     if "menos" in p or "abaixo" in p:
                         res = [f"📖 {t}" for t, d in livros.items() if d['páginas'] < num]
-                        st.write(f"Livros abaixo de {num} páginas:")
+                        st.write(f"Livros com menos de {num} páginas:")
                         for r in res: st.write(r)
-                except: st.write("Indique o limite de páginas.")
-
+                except:
+                    st.write("Indique o limite de páginas.")
             else:
-                st.write("Ainda estou a aprender. Pode perguntar sobre: custos de produção, resumos do catálogo ou médias de tiragem por autor.")
+                st.write("Ainda estou a aprender. Tente perguntar por 'tiragem de Saramago' ou 'custo de 200 páginas'.")
 
 if __name__ == "__main__":
     main()
