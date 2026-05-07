@@ -1,8 +1,7 @@
 import streamlit as st
-from collections import Counter
 from thefuzz import fuzz
 
-# 1. Configuração e Estilo (Mantido conforme o original que gostaste)
+# 1. Configuração e Estilo Bertrand
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="wide")
 st.markdown("""
     <style>
@@ -20,13 +19,9 @@ def main():
     except:
         st.sidebar.title("Bertrand")
     
-    st.sidebar.markdown("---")
-    st.sidebar.write("📌 **Projeto de Estágio**")
-    st.sidebar.info("Assistente Inteligente para consulta de catálogo e apoio à decisão.")
-
     st.title("SISTEMA DE GESTÃO EDITORIAL")
     
-    # Base de Dados Completa
+    # A tua Base de Dados (O conhecimento do programa)
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -50,7 +45,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    pergunta = st.chat_input("Como posso ajudar o departamento hoje?")
+    pergunta = st.chat_input("Pergunte-me qualquer coisa sobre o catálogo...")
 
     if pergunta:
         with st.chat_message("user"):
@@ -59,52 +54,51 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # Extrair números para filtros
+            # EXTRAIR NÚMERO (Essencial para páginas e anos)
             numeros = [int(s) for s in p.split() if s.isdigit()]
-            
-            # --- 1. Filtro de ANOS (Mantido e corrigido) ---
-            if "ano" in p or "antes de" in p or "lançado" in p:
-                if numeros:
-                    ano_alvo = numeros[0]
-                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < ano_alvo]
-                    st.write(f"Títulos lançados antes de {ano_alvo}:")
+            num = numeros[0] if numeros else None
+
+            achou_algo = False
+
+            # --- CASO 1: FILTRO DE PÁGINAS ---
+            if ("págin" in p or "pagin" in p or "pp" in p) and num:
+                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
+                if res:
+                    st.write(f"Estes livros têm menos de {num} páginas:")
                     for r in res: st.write(r)
-                else: st.write("Por favor, indique o ano.")
+                achou_algo = True
 
-            # --- 2. Filtro de PÁGINAS (Mantido e corrigido) ---
-            elif "página" in p or "pagna" in p or "pp" in p:
-                if numeros:
-                    limite = numeros[0]
-                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < limite]
-                    st.write(f"Títulos com menos de {limite} páginas:")
+            # --- CASO 2: FILTRO DE ANOS ---
+            elif ("ano" in p or "lançado" in p or "antes" in p) and num:
+                res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
+                if res:
+                    st.write(f"Títulos lançados antes de {num}:")
                     for r in res: st.write(r)
-                else: st.write("Indique o número de páginas.")
+                achou_algo = True
 
-            # --- 3. Ranking de Autores ---
-            elif "mais livros" in p or "autor com mais" in p:
-                contagem = Counter([d['autor'] for d in livros.values()])
-                autor_top, qtd = contagem.most_common(1)[0]
-                st.write(f"O autor com maior volume no catálogo é **{autor_top}** com **{qtd} títulos**.")
-
-            # --- 4. Pesquisa Geral e Visualização Completa (Métricas) ---
-            else:
-                achou = False
-                for t, d in livros.items():
-                    # Fuzzy matching para encontrar o livro mesmo com erro ortográfico
-                    if fuzz.partial_ratio(p, t.lower()) > 85 or fuzz.partial_ratio(p, d['autor'].lower()) > 85 or fuzz.partial_ratio(p, d['género'].lower()) > 85:
-                        st.write(f"### {t}")
-                        col1, col2, col3 = st.columns(3)
-                        col1.metric("Páginas", d['páginas'])
-                        col2.metric("Ano", d['ano'])
-                        col3.metric("Tiragem", f"{d['tiragem']:,}")
-                        st.write(f"**🖋️ Autor:** {d['autor']} | **📚 Género:** {d['género']}")
-                        st.divider()
-                        achou = True
+            # --- CASO 3: PESQUISA UNIVERSAL (Nomes, Autores, Géneros) ---
+            if not achou_algo:
+                resultados = []
+                for titulo, info in livros.items():
+                    # O programa "lê" tudo o que sabe sobre o livro
+                    conhecimento = f"{titulo} {info['autor']} {info['género']} {info['ano']}".lower()
+                    # Compara com a pergunta (aceita erros ortográficos)
+                    if fuzz.partial_ratio(p, conhecimento) > 80:
+                        resultados.append((titulo, info))
                 
-                if not achou:
-                    st.write("Não encontrei dados exatos. Tente pesquisar por um nome de autor, título ou género.")
+                if resultados:
+                    for t, d in resultados:
+                        st.write(f"### {t}")
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Autor", d['autor'])
+                        c2.metric("Páginas", d['páginas'])
+                        c3.metric("Ano", d['ano'])
+                        st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
+                        st.divider()
+                    achou_algo = True
 
-    st.markdown("<br><hr><center>© 2024 Bertrand Editora | Gestão Inteligente</center>", unsafe_allow_html=True)
+            if not achou_algo:
+                st.write("Infelizmente não encontrei essa informação na base de dados.")
 
 if __name__ == "__main__":
     main()
