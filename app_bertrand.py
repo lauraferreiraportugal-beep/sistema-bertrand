@@ -2,58 +2,61 @@ import streamlit as st
 from thefuzz import fuzz
 from collections import Counter
 
-# 1. Configuração e Estilo Bertrand
+# 1. Configuração e Estilo Bertrand (PRESERVADO E REFORÇADO)
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="centered")
 
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* Barra Lateral Azul Escuro */
+    /* BARRA LATERAL (ZONA AZUL) - PRESERVADA */
     [data-testid="stSidebar"] { 
         background-color: #002e5d; 
         color: white; 
     }
     
-    /* Estilo das Métricas na Sidebar */
-    div[data-testid="stSidebar"] div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        border-radius: 5px;
-        padding: 10px;
-        margin-bottom: 10px;
+    /* MÉTRICAS DA SIDEBAR EM BRANCO - PRESERVADAS */
+    [data-testid="stSidebar"] div[data-testid="stMetricValue"] {
+        color: white !important;
+        font-size: 1.8em;
     }
-
-    /* Título Centralizado */
+    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] {
+        color: #d1d1d1 !important;
+    }
+    
+    /* TÍTULO CENTRALIZADO */
     h1 { 
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: 50px;
+        margin-top: 20px;
     }
 
-    /* FORÇAR O CHATBOX PARA O CENTRO */
+    /* CENTRAR O CHATBOX COM O TÍTULO */
     div[data-testid="stChatInput"] {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 60%;
-        z-index: 1000;
-        background-color: transparent;
+        margin-top: 50px;
+        width: 100%;
     }
 
-    /* Rodapé no fim da página */
+    /* MÉTRICAS CENTRAIS (RESULTADOS) */
+    div[data-testid="stMetric"] { 
+        background-color: #f8f9fa; 
+        border-left: 5px solid #002e5d; 
+        padding: 15px; 
+        border-radius: 5px; 
+    }
+
+    /* RODAPÉ NO FIM - PRESERVADO */
     .footer {
         position: fixed;
         left: 0;
         bottom: 0;
         width: 100%;
         text-align: center;
-        padding: 15px;
+        padding: 10px;
         background-color: white;
         border-top: 1px solid #e0e0e0;
         color: #1e1e1e;
-        font-size: 0.9em;
     }
     .footer-light {
         color: #888888;
@@ -63,7 +66,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
-    # Base de Dados
+    # --- BASE DE DADOS COMPLETA (PRESERVADA) ---
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -75,7 +78,7 @@ def main():
         "O Homem Mais Feliz do Mundo": {"autor": "Eddie Jaku", "páginas": 208, "ano": 2020, "tiragem": 25000, "género": "Biografia"},
         "O Código Da Vinci": {"autor": "Dan Brown", "páginas": 432, "ano": 2003, "tiragem": 120000, "género": "Thriller"},
         "A Metamorfose": {"autor": "Franz Kafka", "páginas": 104, "ano": 1915, "tiragem": 10000, "género": "Clássico"},
-        "Os Maias": {"autor": "Eça de Queirós", "páginas": 736, "888": 1888, "tiragem": 40000, "género": "Realismo"},
+        "Os Maias": {"autor": "Eça de Queirós", "páginas": 736, "ano": 1888, "tiragem": 40000, "género": "Realismo"},
         "Mensagem": {"autor": "Fernando Pessoa", "páginas": 120, "ano": 1934, "tiragem": 60000, "género": "Poesia"},
         "O Retrato de Dorian Gray": {"autor": "Oscar Wilde", "páginas": 224, "ano": 1890, "tiragem": 20000, "género": "Clássico"},
         "Cem Anos de Solidão": {"autor": "Gabriel García Márquez", "páginas": 416, "ano": 1967, "tiragem": 90000, "género": "Realismo Mágico"},
@@ -87,22 +90,27 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Preservada com métricas brancas)
+    # --- BARRA LATERAL (ZONA AZUL) - RECUPERADA ---
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
-        st.metric("Títulos no Sistema", len(livros))
-        st.metric("Total Tiragem", f"{sum(d['tiragem'] for d in livros.values()):,}")
+        # Cálculos automáticos
+        total_l = len(livros)
+        total_t = sum(d['tiragem'] for d in livros.values())
+        
+        st.metric("Títulos no Sistema", total_l)
+        st.metric("Total Tiragem", f"{total_t:,}")
+        
         st.markdown("---")
+        st.write("📌 **Projeto de Estágio**")
         st.caption("Ficha Técnica Editorial")
 
-    # Título Principal
+    # --- TÍTULO CENTRAL ---
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # Input de Chat posicionado no centro via CSS
+    # --- CHATBOX CENTRALIZADO ---
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
-        # Quando há uma pergunta, as mensagens aparecem abaixo do título
         with st.chat_message("user"):
             st.write(p)
         
@@ -112,14 +120,26 @@ def main():
         respondido = False
 
         with st.chat_message("assistant"):
-            # Lógica de resposta universal (Preservada)
+            # Lógica de Filtros (Páginas/Anos)
             if num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
-                op = "maior" if "mais" in pergunta or "maior" in pergunta else "menor"
-                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if (d['páginas'] > num if op == "maior" else d['páginas'] < num)]
-                st.write(f"Resultados ({op} que {num} páginas):")
+                if "mais" in pergunta or "maior" in pergunta:
+                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
+                else:
+                    res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
+                st.write(f"Resultados para filtro de páginas ({num}):")
                 for r in res: st.write(r)
                 respondido = True
 
+            elif num and ("ano" in pergunta or "lançado" in pergunta):
+                if "depois" in pergunta or "após" in pergunta:
+                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] > num]
+                else:
+                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
+                st.write(f"Resultados para filtro de ano ({num}):")
+                for r in res: st.write(r)
+                respondido = True
+
+            # Pesquisa Universal (Acumulada)
             if not respondido:
                 resultados = []
                 for t, d in livros.items():
@@ -134,10 +154,14 @@ def main():
                         c1.metric("Autor", d['autor'])
                         c2.metric("Ano", d['ano'])
                         c3.metric("Páginas", d['páginas'])
+                        st.write(f"**Tiragem:** {d['tiragem']:,} ex | **Género:** {d['género']}")
                         st.divider()
                     respondido = True
 
-    # Rodapé Fixo
+            if not respondido:
+                st.warning("Informação não localizada.")
+
+    # --- RODAPÉ ---
     st.markdown("""
         <div class="footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
