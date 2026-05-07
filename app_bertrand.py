@@ -21,11 +21,11 @@ def main():
         st.sidebar.title("Bertrand")
         
     st.sidebar.title("Comandos Úteis")
+    st.sidebar.write("- 'Livros com menos de 200 páginas'")
     st.sidebar.write("- 'Quem tem mais livros?'")
     st.sidebar.write("- 'Resumo do catálogo'")
-    st.sidebar.write("- 'Custo de 500 páginas'")
     
-    st.title(" Bertrand Editorial Intelligence")
+    st.title("🧠 Bertrand Editorial Intelligence")
     st.markdown("##### Assistente para Apoio à Decisão e Planeamento")
 
     # Base de Dados
@@ -61,36 +61,40 @@ def main():
         p = pergunta.lower()
         
         with st.chat_message("assistant"):
-            # LÓGICA DE CÁLCULO E RANKING
-            if "mais livros" in p:
-                contagem = Counter([d['autor'] for d in livros.values()])
-                autor_top, qtd = contagem.most_common(1)[0]
-                st.write(f"O autor com mais títulos é **{autor_top}** ({qtd} livros).")
-
-            elif "resumo" in p:
-                st.write(f"Catálogo atual: **{len(livros)} títulos**.")
-                st.write(f"Tiragem total: **{sum(d['tiragem'] for d in livros.values()):,} exemplares**.")
-
-            elif "custo" in p:
+            # 1. FILTRO DE PÁGINAS (Prioridade)
+            if "páginas" in p and ("menos" in p or "abaixo" in p or "até" in p):
                 try:
                     num = int(''.join(filter(str.isdigit, p)))
-                    st.write(f"Custo estimado para {num} páginas: **{num * 0.03:.2f}€/unidade**.")
-                except: st.write("Indique o número de páginas.")
+                    res = [f"📖 **{t}** ({d['páginas']} pág.)" for t, d in livros.items() if d['páginas'] < num]
+                    if res:
+                        st.write(f"Encontrei estes títulos com menos de {num} páginas:")
+                        for r in res: st.write(r)
+                    else:
+                        st.write(f"Não encontrei livros com menos de {num} páginas.")
+                except: st.write("Por favor, indica o número de páginas (ex: 200).")
 
-            # LÓGICA DE PESQUISA UNIVERSAL (A "MAGIA" PARA TER TODAS AS RESPOSTAS)
+            # 2. RANKING DE AUTORES
+            elif "mais livros" in p or "autor com mais" in p:
+                contagem = Counter([d['autor'] for d in livros.values()])
+                autor_top, qtd = contagem.most_common(1)[0]
+                st.write(f"O autor com mais títulos é **{autor_top}** com {qtd} livros.")
+
+            # 3. RESUMO
+            elif "resumo" in p or "catálogo" in p:
+                st.write(f"Gerimos **{len(livros)} títulos**. Tiragem total: **{sum(d['tiragem'] for d in livros.values()):,}**.")
+
+            # 4. PESQUISA GERAL (TEXTO)
             else:
                 resultados = []
                 for titulo, info in livros.items():
-                    # Se a palavra que o utilizador escreveu estiver no Título, Autor ou Género
                     if p in titulo.lower() or p in info['autor'].lower() or p in info['género'].lower():
-                        resultados.append(f"📖 **{titulo}** | {info['autor']} | {info['género']} | {info['páginas']} pág. | Tiragem: {info['tiragem']:,}")
+                        resultados.append(f"📖 **{titulo}** | {info['autor']} | Tiragem: {info['tiragem']:,}")
                 
                 if resultados:
-                    st.write("Encontrei estas informações na base de dados:")
-                    for r in resultados:
-                        st.write(r)
+                    st.write("Resultados da pesquisa:")
+                    for r in resultados: st.write(r)
                 else:
-                    st.write("Infelizmente não encontrei essa informação. Tente pesquisar por um nome de autor, título ou género específico.")
+                    st.write("Não percebi a pergunta. Tente: 'livros com menos de 200 páginas' ou 'tiragem de Saramago'.")
 
 if __name__ == "__main__":
     main()
