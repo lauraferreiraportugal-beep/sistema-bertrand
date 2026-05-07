@@ -52,7 +52,7 @@ def main():
     with st.sidebar:
         st.markdown("# Projeto Estágio")
         st.markdown("---")
-        st.markdown("**Funcionalidades:**\n- 🔍 Busca inteligente por Autor/Género.\n- 📈 Consulta de Tiragens.\n- 📏 Filtros de Páginas.\n- 📅 Filtros de Ano.\n- 📋 Listagem de catálogo.")
+        st.markdown("**Funcionalidades:**\n- 🔍 Busca inteligente por Autor/Género.\n- 📈 Consulta de Tiragens.\n- 📏 Filtros de Páginas.\n- 📅 Filtros de Ano (Exato/Antes/Depois).\n- 📋 Listagem de catálogo.")
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
@@ -68,14 +68,14 @@ def main():
         
         with st.chat_message("assistant"):
             resultados = livros.copy()
-            filtros_aplicados = []
+            filtro_aplicado = False
 
             # 1. Filtro de Autor
             for t, d in livros.items():
                 autor_n = d['autor'].lower()
                 if autor_n in pergunta or (autor_n.split()[-1] in pergunta and len(autor_n.split()[-1]) > 4):
                     resultados = {k: v for k, v in resultados.items() if v['autor'].lower() == autor_n}
-                    filtros_aplicados.append(f"Autor: {d['autor']}")
+                    filtro_aplicado = True
                     break
 
             # 2. Filtro de Género
@@ -83,26 +83,37 @@ def main():
             for g in generos:
                 if g in pergunta:
                     resultados = {k: v for k, v in resultados.items() if g in v['género'].lower()}
-                    filtros_ativos = True # Marcador interno
+                    filtro_aplicado = True
                     break
 
-            # 3. FILTRO NUMÉRICO (CORRIGIDO)
+            # 3. FILTRO DE ANO E PÁGINAS (CORRIGIDO PARA ANO EXATO)
             if num:
+                # Caso páginas
                 if "págin" in pergunta or "pp" in pergunta:
-                    if "mais" in pergunta or "maior" in pergunta or "superior" in pergunta:
+                    filtro_aplicado = True
+                    if "mais" in pergunta or "maior" in pergunta:
                         resultados = {k: v for k, v in resultados.items() if v['páginas'] > num}
-                    elif "menos" in pergunta or "inferior" in pergunta or "abaixo" in pergunta:
+                    elif "menos" in pergunta or "inferior" in pergunta:
                         resultados = {k: v for k, v in resultados.items() if v['páginas'] < num}
-                elif num > 1000 and ("ano" in pergunta or "antes" in pergunta or "depois" in pergunta):
+                    else:
+                        resultados = {k: v for k, v in resultados.items() if v['páginas'] == num}
+                
+                # Caso ano
+                elif num > 1000: # Evitar confundir anos com pequenas tiragens ou páginas
+                    filtro_aplicado = True
                     if "depois" in pergunta or "após" in pergunta:
                         resultados = {k: v for k, v in resultados.items() if v['ano'] > num}
-                    else:
+                    elif "antes" in pergunta or "anterior" in pergunta:
                         resultados = {k: v for k, v in resultados.items() if v['ano'] < num}
+                    else:
+                        # BUSCA POR ANO EXATO
+                        resultados = {k: v for k, v in resultados.items() if v['ano'] == num}
 
-            # VERIFICAÇÃO DE RESULTADOS
-            if not resultados or (len(resultados) == len(livros) and not any(x in pergunta for x in ["todos", "lista"])):
-                 # Se ele não filtrou nada e não pediste "todos", é porque a pergunta falhou
-                 st.warning("Não encontrei livros que correspondam exatamente a esses critérios.")
+            # APRESENTAÇÃO
+            if not filtro_aplicado and not any(x in pergunta for x in ["todos", "lista"]):
+                 st.warning("Não encontrei critérios de pesquisa válidos (Autor, Género, Ano ou Páginas).")
+            elif not resultados:
+                st.warning("Não foram encontrados livros para essa pesquisa específica.")
             else:
                 st.write(f"### Resultados encontrados ({len(resultados)})")
                 
@@ -122,7 +133,7 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    st.markdown("""<div class="custom-footer"><div>© 2026 Bertrand Editora </div><div style="color: #888; font-size: 0.75em; margin-top: 2px;">Assistente Inteligente.</div></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="custom-footer"><div>© 2026 Bertrand Editora | Inteligência Editorial</div><div style="color: #888; font-size: 0.75em; margin-top: 2px;">Assistente Inteligente.</div></div>""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
