@@ -2,68 +2,69 @@ import streamlit as st
 from thefuzz import fuzz
 from collections import Counter
 
-# 1. Configuração e Estilo Bertrand (PRESERVADO)
+# 1. Configuração e Estilo Bertrand
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="centered")
 
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* BARRA LATERAL (ZONA AZUL) - PRESERVADA */
+    /* Barra Lateral Azul Escuro - PRESERVADA */
     [data-testid="stSidebar"] { 
         background-color: #002e5d; 
         color: white; 
     }
     
-    /* MÉTRICAS DA SIDEBAR EM BRANCO - PRESERVADAS */
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] {
         color: white !important;
         font-size: 1.8em;
     }
-    [data-testid="stSidebar"] div[data-testid="stMetricLabel"] {
-        color: #d1d1d1 !important;
-    }
     
-    /* TÍTULO CENTRALIZADO */
+    /* Título Centralizado no Topo */
     h1 { 
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: 10px;
-        margin-bottom: 0px;
+        margin-top: -30px;
     }
 
-    /* POSICIONAMENTO DO CHATBOX MAIS ACIMA */
+    /* FORÇAR O CHATBOX PARA O TOPO (Abaixo do Título) */
     div[data-testid="stChatInput"] {
-        margin-top: -30px; /* Puxa o retângulo para cima */
-        padding-top: 0px;
+        position: relative;
+        margin-top: 20px !important;
+        margin-bottom: 40px !important;
     }
 
-    /* MÉTRICAS CENTRAIS (RESULTADOS) */
+    /* Rodapé no final da página - POSIÇÃO SOLICITADA */
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding: 15px;
+        background-color: white;
+        border-top: 1px solid #e0e0e0;
+        color: #1e1e1e;
+        z-index: 100;
+    }
+    .footer-light {
+        color: #888888;
+        font-size: 0.85em;
+    }
+    
+    /* Métricas de resultados */
     div[data-testid="stMetric"] { 
         background-color: #f8f9fa; 
         border-left: 5px solid #002e5d; 
         padding: 15px; 
         border-radius: 5px; 
     }
-
-    /* RODAPÉ E INFO SUPERIOR */
-    .header-info {
-        text-align: center;
-        padding: 10px 0;
-        color: #1e1e1e;
-        border-bottom: 1px solid #e0e0e0;
-        margin-bottom: 20px;
-    }
-    .header-light {
-        color: #888888;
-        font-size: 0.8em;
-    }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
-    # --- BASE DE DADOS COMPLETA (PRESERVADA) ---
+    # Base de Dados
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
         "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
@@ -87,25 +88,18 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # --- BARRA LATERAL (ZONA AZUL) - MANTIDA ---
+    # Sidebar (PRESERVADA)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
         st.metric("Total Tiragem", f"{sum(d['tiragem'] for d in livros.values()):,}")
         st.markdown("---")
-        st.write("📌 **Projeto de Estágio**")
         st.caption("Ficha Técnica Editorial")
 
-    # --- TOPO ---
+    # 1. Título
     st.title("SISTEMA DE GESTÃO EDITORIAL")
-    st.markdown("""
-        <div class="header-info">
-            © 2024 Bertrand Editora | Inteligência Editorial<br>
-            <span class="header-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
-        </div>
-        """, unsafe_allow_html=True)
 
-    # --- CHATBOX REPOSICIONADO ---
+    # 2. Chatbox no TOPO (Abaixo do Título)
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -118,13 +112,12 @@ def main():
         respondido = False
 
         with st.chat_message("assistant"):
-            # Lógica de resposta (Mantida intacta)
             if num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
                 if "mais" in pergunta or "maior" in pergunta:
                     res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
                 else:
                     res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
-                st.write(f"Resultados para páginas ({num}):")
+                st.write(f"Resultados para filtro de páginas ({num}):")
                 for r in res: st.write(r)
                 respondido = True
 
@@ -144,6 +137,14 @@ def main():
                         c3.metric("Páginas", d['páginas'])
                         st.divider()
                     respondido = True
+
+    # 3. Rodapé no FINAL DA PÁGINA
+    st.markdown("""
+        <div class="footer">
+            © 2024 Bertrand Editora | Inteligência Editorial<br>
+            <span class="footer-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
+        </div>
+        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
