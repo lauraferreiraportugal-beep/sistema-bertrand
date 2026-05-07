@@ -14,7 +14,10 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def main():
+    try:
     st.sidebar.image("logo.png", width=200)
+except:
+    st.sidebar.title("Bertrand")
     st.sidebar.title("Comandos Úteis")
     st.sidebar.write("- 'Resumo do catálogo'")
     st.sidebar.write("- 'Custo de 300 páginas'")
