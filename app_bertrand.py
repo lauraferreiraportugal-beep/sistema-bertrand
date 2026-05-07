@@ -9,7 +9,7 @@ st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
     
-    /* Barra Lateral Azul Escuro - PRESERVADA */
+    /* BARRA LATERAL AZUL - PRESERVADA */
     [data-testid="stSidebar"] { 
         background-color: #002e5d; 
         color: white; 
@@ -20,28 +20,33 @@ st.markdown("""
         font-size: 1.8em;
     }
     
-    /* Título Centralizado */
+    /* TÍTULO */
     h1 { 
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: -20px;
+        margin-top: 0px;
     }
 
-    /* AJUSTE DO CHATBOX: REMOVER DO FUNDO E SUBIR */
+    /* MOVER CHATBOX PARA ONDE ESTÁ O CÍRCULO NA FOTO */
+    /* Removemos a fixação no fundo e damos margem */
     div[data-testid="stChatInput"] {
-        position: static !important; /* Remove o bloqueio no fundo */
-        margin-top: 120px !important;
+        position: relative !important;
+        bottom: auto !important;
+        width: 100% !important;
+        margin-top: 20px !important;
+        margin-bottom: 40px !important;
+        padding: 0px !important;
     }
 
-    /* Rodapé no final da página - PRESERVADO */
+    /* RODAPÉ NO FIM - PRESERVADO */
     .footer {
         position: fixed;
         left: 0;
         bottom: 0;
         width: 100%;
         text-align: center;
-        padding: 15px;
+        padding: 10px;
         background-color: white;
         border-top: 1px solid #e0e0e0;
         color: #1e1e1e;
@@ -51,8 +56,8 @@ st.markdown("""
         color: #888888;
         font-size: 0.85em;
     }
-    
-    /* Estilo das métricas centrais */
+
+    /* MÉTRICAS DE RESULTADOS */
     div[data-testid="stMetric"] { 
         background-color: #f8f9fa; 
         border-left: 5px solid #002e5d; 
@@ -87,7 +92,7 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Sidebar (Preservada com métricas calculadas)
+    # Sidebar (Métricas preservadas)
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
         st.metric("Títulos no Sistema", len(livros))
@@ -95,10 +100,10 @@ def main():
         st.markdown("---")
         st.caption("Ficha Técnica Editorial")
 
-    # Título
+    # 1. TÍTULO
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    # Chatbox (Agora configurado para subir no layout)
+    # 2. CHATBOX (Agora no local solicitado)
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -137,7 +142,7 @@ def main():
                         st.divider()
                     respondido = True
 
-    # Rodapé no FINAL DA PÁGINA
+    # 3. RODAPÉ (No fundo absoluto)
     st.markdown("""
         <div class="footer">
             © 2024 Bertrand Editora | Inteligência Editorial<br>
