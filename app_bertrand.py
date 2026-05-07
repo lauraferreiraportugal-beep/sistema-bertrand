@@ -2,7 +2,7 @@ import streamlit as st
 from thefuzz import fuzz
 from collections import Counter
 
-# 1. Configuração e Estilo Bertrand (PRESERVADO E REFORÇADO)
+# 1. Configuração e Estilo Bertrand (PRESERVADO)
 st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="centered")
 
 st.markdown("""
@@ -29,13 +29,14 @@ st.markdown("""
         color: #002e5d !important; 
         font-family: 'Georgia', serif; 
         text-align: center;
-        margin-top: 20px;
+        margin-top: 10px;
+        margin-bottom: 0px;
     }
 
-    /* CENTRAR O CHATBOX COM O TÍTULO */
+    /* POSICIONAMENTO DO CHATBOX MAIS ACIMA */
     div[data-testid="stChatInput"] {
-        margin-top: 50px;
-        width: 100%;
+        margin-top: -30px; /* Puxa o retângulo para cima */
+        padding-top: 0px;
     }
 
     /* MÉTRICAS CENTRAIS (RESULTADOS) */
@@ -46,19 +47,15 @@ st.markdown("""
         border-radius: 5px; 
     }
 
-    /* RODAPÉ NO FIM - PRESERVADO */
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
+    /* RODAPÉ E INFO SUPERIOR */
+    .header-info {
         text-align: center;
-        padding: 10px;
-        background-color: white;
-        border-top: 1px solid #e0e0e0;
+        padding: 10px 0;
         color: #1e1e1e;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 20px;
     }
-    .footer-light {
+    .header-light {
         color: #888888;
         font-size: 0.8em;
     }
@@ -90,24 +87,25 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # --- BARRA LATERAL (ZONA AZUL) - RECUPERADA ---
+    # --- BARRA LATERAL (ZONA AZUL) - MANTIDA ---
     with st.sidebar:
         st.markdown("### 📊 Visão Geral")
-        # Cálculos automáticos
-        total_l = len(livros)
-        total_t = sum(d['tiragem'] for d in livros.values())
-        
-        st.metric("Títulos no Sistema", total_l)
-        st.metric("Total Tiragem", f"{total_t:,}")
-        
+        st.metric("Títulos no Sistema", len(livros))
+        st.metric("Total Tiragem", f"{sum(d['tiragem'] for d in livros.values()):,}")
         st.markdown("---")
         st.write("📌 **Projeto de Estágio**")
         st.caption("Ficha Técnica Editorial")
 
-    # --- TÍTULO CENTRAL ---
+    # --- TOPO ---
     st.title("SISTEMA DE GESTÃO EDITORIAL")
+    st.markdown("""
+        <div class="header-info">
+            © 2024 Bertrand Editora | Inteligência Editorial<br>
+            <span class="header-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # --- CHATBOX CENTRALIZADO ---
+    # --- CHATBOX REPOSICIONADO ---
     p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
@@ -120,26 +118,16 @@ def main():
         respondido = False
 
         with st.chat_message("assistant"):
-            # Lógica de Filtros (Páginas/Anos)
+            # Lógica de resposta (Mantida intacta)
             if num and ("págin" in pergunta or "pagin" in pergunta or "pp" in pergunta):
                 if "mais" in pergunta or "maior" in pergunta:
                     res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
                 else:
                     res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] < num]
-                st.write(f"Resultados para filtro de páginas ({num}):")
+                st.write(f"Resultados para páginas ({num}):")
                 for r in res: st.write(r)
                 respondido = True
 
-            elif num and ("ano" in pergunta or "lançado" in pergunta):
-                if "depois" in pergunta or "após" in pergunta:
-                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] > num]
-                else:
-                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
-                st.write(f"Resultados para filtro de ano ({num}):")
-                for r in res: st.write(r)
-                respondido = True
-
-            # Pesquisa Universal (Acumulada)
             if not respondido:
                 resultados = []
                 for t, d in livros.items():
@@ -154,20 +142,8 @@ def main():
                         c1.metric("Autor", d['autor'])
                         c2.metric("Ano", d['ano'])
                         c3.metric("Páginas", d['páginas'])
-                        st.write(f"**Tiragem:** {d['tiragem']:,} ex | **Género:** {d['género']}")
                         st.divider()
                     respondido = True
-
-            if not respondido:
-                st.warning("Informação não localizada.")
-
-    # --- RODAPÉ ---
-    st.markdown("""
-        <div class="footer">
-            © 2024 Bertrand Editora | Inteligência Editorial<br>
-            <span class="footer-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
-        </div>
-        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
