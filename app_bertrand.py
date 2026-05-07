@@ -10,7 +10,15 @@ st.markdown("""
     [data-testid="stSidebar"] { background-color: #002e5d; color: white; }
     [data-testid="stSidebar"] div[data-testid="stMetricValue"] { color: white !important; font-size: 1.8em; }
     [data-testid="stSidebar"] div[data-testid="stMetricLabel"] { color: #d1d1d1 !important; }
-    h1 { color: #002e5d !important; font-family: 'Georgia', serif; text-align: center; margin-top: 20px; }
+    
+    /* TÍTULO CENTRADO */
+    h1 { 
+        color: #002e5d !important; 
+        font-family: 'Georgia', serif; 
+        text-align: center; 
+        margin-top: 20px;
+        width: 100%;
+    }
     
     /* POSICIONAMENTO DO CHATBOX NO MEIO */
     div[data-testid="stChatInput"] { 
@@ -20,22 +28,19 @@ st.markdown("""
         margin-bottom: 30px !important; 
     }
     
-    /* RODAPÉ CENTRADO NO FUNDO */
+    /* RODAPÉ PERFEITAMENTE CENTRADO */
     .custom-footer { 
         position: fixed; 
         left: 0; 
         bottom: 0; 
         width: 100%; 
         text-align: center; 
-        padding: 15px 0; 
+        padding: 20px 0; 
         background-color: white; 
         border-top: 1px solid #e0e0e0; 
         color: #1e1e1e; 
         z-index: 999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        display: block; /* Garante que o text-align center funcione em toda a linha */
     }
     
     /* AJUSTE PARA O NOME DO AUTOR APARECER COMPLETO */
@@ -152,11 +157,11 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    # RODAPÉ CENTRADO
+    # RODAPÉ PERFEITAMENTE CENTRADO
     st.markdown("""
         <div class="custom-footer">
-            <span>© 2026 Bertrand Editora | Inteligência Editorial</span>
-            <span style="color: #888; font-size: 0.85em; margin-top: 5px;">Assistente Inteligente.</span>
+            <div style="width: 100%;">© 2026 Bertrand Editora | Inteligência Editorial</div>
+            <div style="color: #888; font-size: 0.85em; margin-top: 5px;">Assistente Inteligente.</div>
         </div>
         """, unsafe_allow_html=True)
 
