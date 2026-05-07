@@ -1,109 +1,104 @@
 import streamlit as st
 
 # 1. Configuração da Página
-st.set_page_config(page_title="Portal Editorial Bertrand", page_icon="📖", layout="wide")
+st.set_page_config(page_title="Bertrand Editorial AI", page_icon="🧠", layout="wide")
 
-# 2. CSS Personalizado - Identidade Visual Bertrand
+# 2. Estilo Visual Bertrand
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #ffffff;
-    }
-    [data-testid="stSidebar"] {
-        background-color: #002e5d;
-        color: white;
-    }
-    [data-testid="stSidebar"] .stMarkdown p {
-        color: #f0f0f0;
-    }
-    div[data-testid="stMetric"] {
-        background-color: #f8f9fa;
-        border-left: 5px solid #002e5d;
-        padding: 15px;
-        border-radius: 5px;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
-    }
-    h1, h2, h3 {
-        color: #002e5d !important;
-        font-family: 'Georgia', serif;
-    }
-    /* Estilo para centralizar a imagem na barra lateral */
-    [data-testid="stSidebar"] img {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        padding-bottom: 20px;
-    }
+    .stApp { background-color: #ffffff; }
+    [data-testid="stSidebar"] { background-color: #002e5d; color: white; }
+    .stChatMessage { border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px; }
+    h1 { color: #002e5d; font-family: 'Georgia', serif; }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
-    # Barra Lateral com Logótipo
-    st.sidebar.image("logo.png.png", width=200)
-    st.sidebar.markdown("---")
-    st.sidebar.write(" **Projeto de Estágio**")
-    st.sidebar.write("Consulta rápida de catálogo e métricas editoriais.")
+    st.sidebar.image("logo.png", width=200)
+    st.sidebar.title("Comandos Úteis")
+    st.sidebar.write("- 'Resumo do catálogo'")
+    st.sidebar.write("- 'Custo de 300 páginas'")
+    st.sidebar.write("- 'Média de tiragem de Ficção'")
     
-    # Conteúdo Principal
-    st.title("SISTEMA DE GESTÃO EDITORIAL")
-    st.write("") # Espaço em branco
+    st.title("🧠 Bertrand Editorial Intelligence")
+    st.markdown("##### Assistente para Apoio à Decisão e Planeamento")
 
-    # Base de Dados completa
+    # Base de Dados
     livros = {
-        "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": "50.000", "género": "Romance Histórico"},
-        "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": "15.000", "género": "Ficção"},
-        "Ensaio Sobre a Cegueira": {"autor": "José Saramago", "páginas": 312, "ano": 1995, "tiragem": "100.000", "género": "Ficção Distópica"},
-        "Equador": {"autor": "Miguel Sousa Tavares", "páginas": 528, "ano": 2003, "tiragem": "200.000", "género": "Romance"},
-        "O Alquimista": {"autor": "Paulo Coelho", "páginas": 208, "ano": 1988, "tiragem": "150.000", "género": "Espiritualidade"},
-        "A Menina que Roubava Livros": {"autor": "Markus Zusak", "páginas": 480, "ano": 2005, "tiragem": "80.000", "género": "Drama Histórico"},
-        "O Principezinho": {"autor": "Antoine de Saint-Exupéry", "páginas": 96, "ano": 1943, "tiragem": "30.000", "género": "Infantil"},
-        "O Homem Mais Feliz do Mundo": {"autor": "Eddie Jaku", "páginas": 208, "ano": 2020, "tiragem": "25.000", "género": "Biografia"},
-        "O Código Da Vinci": {"autor": "Dan Brown", "páginas": 432, "ano": 2003, "tiragem": "120.000", "género": "Thriller"},
-        "A Metamorfose": {"autor": "Franz Kafka", "páginas": 104, "ano": 1915, "tiragem": "10.000", "género": "Clássico"},
-        "Os Maias": {"autor": "Eça de Queirós", "páginas": 736, "ano": 1888, "tiragem": "40.000", "género": "Realismo"},
-        "Mensagem": {"autor": "Fernando Pessoa", "páginas": 120, "ano": 1934, "tiragem": "60.000", "género": "Poesia"},
-        "O Retrato de Dorian Gray": {"autor": "Oscar Wilde", "páginas": 224, "ano": 1890, "tiragem": "20.000", "género": "Clássico"},
-        "Cem Anos de Solidão": {"autor": "Gabriel García Márquez", "páginas": 416, "ano": 1967, "tiragem": "90.000", "género": "Realismo Mágico"},
-        "O Hobbit": {"autor": "J.R.R. Tolkien", "páginas": 310, "ano": 1937, "tiragem": "110.000", "género": "Fantasia"},
-        "Sapiens": {"autor": "Yuval Noah Harari", "páginas": 464, "ano": 2011, "tiragem": "75.000", "género": "História/Ensaio"},
-        "A Quinta dos Animais": {"autor": "George Orwell", "páginas": 112, "ano": 1945, "tiragem": "55.000", "género": "Sátira Política"},
-        "O Diário de Anne Frank": {"autor": "Anne Frank", "páginas": 352, "ano": 1947, "tiragem": "200.000", "género": "Biografia/História"},
-        "Livro do Desassossego": {"autor": "Fernando Pessoa", "páginas": 512, "ano": 1982, "tiragem": "45.000", "género": "Ficção/Poesia"},
-        "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": "70.000", "género": "Ficção"}
+        "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
+        "A Sibila": {"autor": "Agustina Bessa-Luís", "páginas": 256, "ano": 1954, "tiragem": 15000, "género": "Ficção"},
+        "Ensaio Sobre a Cegueira": {"autor": "José Saramago", "páginas": 312, "ano": 1995, "tiragem": 100000, "género": "Ficção Distópica"},
+        "Equador": {"autor": "Miguel Sousa Tavares", "páginas": 528, "ano": 2003, "tiragem": 200000, "género": "Romance"},
+        "O Alquimista": {"autor": "Paulo Coelho", "páginas": 208, "ano": 1988, "tiragem": 150000, "género": "Espiritualidade"},
+        "A Menina que Roubava Livros": {"autor": "Markus Zusak", "páginas": 480, "ano": 2005, "tiragem": 80000, "género": "Drama Histórico"},
+        "O Principezinho": {"autor": "Antoine de Saint-Exupéry", "páginas": 96, "ano": 1943, "tiragem": 30000, "género": "Infantil"},
+        "O Homem Mais Feliz do Mundo": {"autor": "Eddie Jaku", "páginas": 208, "ano": 2020, "tiragem": 25000, "género": "Biografia"},
+        "O Código Da Vinci": {"autor": "Dan Brown", "páginas": 432, "ano": 2003, "tiragem": 120000, "género": "Thriller"},
+        "A Metamorfose": {"autor": "Franz Kafka", "páginas": 104, "ano": 1915, "tiragem": 10000, "género": "Clássico"},
+        "Os Maias": {"autor": "Eça de Queirós", "páginas": 736, "ano": 1888, "tiragem": 40000, "género": "Realismo"},
+        "Mensagem": {"autor": "Fernando Pessoa", "páginas": 120, "ano": 1934, "tiragem": 60000, "género": "Poesia"},
+        "O Retrato de Dorian Gray": {"autor": "Oscar Wilde", "páginas": 224, "ano": 1890, "tiragem": 20000, "género": "Clássico"},
+        "Cem Anos de Solidão": {"autor": "Gabriel García Márquez", "páginas": 416, "ano": 1967, "tiragem": 90000, "género": "Realismo Mágico"},
+        "O Hobbit": {"autor": "J.R.R. Tolkien", "páginas": 310, "ano": 1937, "tiragem": 110000, "género": "Fantasia"},
+        "Sapiens": {"autor": "Yuval Noah Harari", "páginas": 464, "ano": 2011, "tiragem": 75000, "género": "História/Ensaio"},
+        "A Quinta dos Animais": {"autor": "George Orwell", "páginas": 112, "ano": 1945, "tiragem": 55000, "género": "Sátira Política"},
+        "O Diário de Anne Frank": {"autor": "Anne Frank", "páginas": 352, "ano": 1947, "tiragem": 200000, "género": "Biografia/História"},
+        "Livro do Desassossego": {"autor": "Fernando Pessoa", "páginas": 512, "ano": 1982, "tiragem": 45000, "género": "Ficção/Poesia"},
+        "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    # Menu de Seleção
-    lista_ordenada = sorted(list(livros.keys()))
-    escolha = st.selectbox("📖 Selecione um título para consulta técnica:", ["-- Pesquisar no Catálogo --"] + lista_ordenada)
+    pergunta = st.chat_input("Como posso ajudar a Bertrand hoje?")
 
-    if escolha != "-- Pesquisar no Catálogo --":
-        dados = livros[escolha]
+    if pergunta:
+        with st.chat_message("user"):
+            st.write(pergunta)
         
-        st.write(f"### {escolha}")
+        p = pergunta.lower()
         
-        # Métricas (Páginas, Ano, Tiragem)
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Páginas", f"{dados['páginas']} pp.")
-        m2.metric("Publicação", dados['ano'])
-        m3.metric("Tiragem (Exemplares)", dados['tiragem'])
+        with st.chat_message("assistant"):
+            # 1. RESUMO GERAL (DASHBOARD)
+            if "resumo" in p or "catálogo" in p:
+                total_livros = len(livros)
+                total_tiragem = sum(d['tiragem'] for d in livros.values())
+                st.write(f"Atualmente gerimos **{total_livros} títulos**.")
+                st.write(f"Volume total de impressões histórico: **{total_tiragem:,} exemplares**.")
+                st.info("Género mais frequente no catálogo: **Ficção**")
 
-        st.markdown("---")
-        
-        # Dados do autor e género
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown(f"**🖋️ Autor:** {dados['autor']}")
-        with c2:
-            st.markdown(f"**📚 Género Literário:** {dados['género']}")
-        
-        st.success(f"Informação validada para a obra: {escolha}")
-    else:
-        st.info("Utilize a caixa de seleção acima para verificar os dados técnicos.")
+            # 2. ESTIMATIVA DE CUSTO (Lógica Editorial)
+            elif "custo" in p or "preço" in p:
+                try:
+                    pags = int(''.join(filter(str.isdigit, p)))
+                    custo_estimado = pags * 0.03 # Exemplo: 0.03€ por página
+                    st.write(f"Para um livro de **{pags} páginas**, o custo base de produção estimado é de **{custo_estimado:.2f}€** por unidade (papel/impressão padrão).")
+                except: st.write("Por favor, indique o número de páginas para eu calcular o custo.")
 
-    # Rodapé institucional
-    st.write("<br><br>", unsafe_allow_html=True)
-    st.divider()
-    st.caption("© 2024 Bertrand Editora | Powered by IT Division")
+            # 3. ANÁLISE DE TIRAGEM E RECOMENDAÇÃO (O teu pedido original melhorado)
+            elif "tiragem" in p or "impressões" in p or "méd" in p:
+                # Verifica se falou em Género ou Autor
+                filtro = next((g for t, d in livros.items() if g.lower() in p), None)
+                autor = next((d['autor'] for t, d in livros.items() if d['autor'].lower() in p), None)
+                
+                if autor:
+                    dados_autor = [d['tiragem'] for d in livros.values() if d['autor'] == autor]
+                    media = sum(dados_autor) / len(dados_autor)
+                    st.write(f"O autor **{autor}** tem uma média de **{int(media):,} exemplares** por título.")
+                    st.success(f"Sugestão para novo título: Tiragem inicial de **{int(media * 1.1):,}** (Média + 10% margem de segurança).")
+                elif filtro:
+                    dados_gen = [d['tiragem'] for d in livros.values() if d['género'] == filtro]
+                    st.write(f"A média de tiragem para o género **{filtro}** é de **{int(sum(dados_gen)/len(dados_gen)):,}** exemplares.")
+
+            # 4. FILTRO DE PÁGINAS (Rápido)
+            elif "páginas" in p:
+                try:
+                    num = int(''.join(filter(str.isdigit, p)))
+                    if "menos" in p or "abaixo" in p:
+                        res = [f"📖 {t}" for t, d in livros.items() if d['páginas'] < num]
+                        st.write(f"Livros abaixo de {num} páginas:")
+                        for r in res: st.write(r)
+                except: st.write("Indique o limite de páginas.")
+
+            else:
+                st.write("Ainda estou a aprender. Pode perguntar sobre: custos de produção, resumos do catálogo ou médias de tiragem por autor.")
 
 if __name__ == "__main__":
     main()
