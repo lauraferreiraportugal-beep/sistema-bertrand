@@ -50,7 +50,7 @@ def main():
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    p = st.chat_input("Pergunte sobre tiragens, páginas ou autores...")
+    p = st.chat_input("Pergunte por autores, tiragens ou páginas...")
 
     if p:
         with st.chat_message("user"):
@@ -63,34 +63,33 @@ def main():
         with st.chat_message("assistant"):
             respondido = False
             
-            # --- 1. LÓGICA MATEMÁTICA PARA TIRAGEM (CORREÇÃO CRÍTICA) ---
-            if "tiragem" in pergunta and num:
-                if "inferior" in pergunta or "menos" in pergunta or "abaixo" in pergunta:
-                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] <= num]
-                    msg = f"Livros com tiragem até {num:,}:"
-                else:
-                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] >= num]
-                    msg = f"Livros com tiragem acima de {num:,}:"
-                
-                st.write(f"### {msg}")
-                for t, d in resultados:
-                    st.write(f"📖 **{t}** — Tiragem: {d['tiragem']:,}")
-                respondido = True
-
-            # --- 2. FILTROS DE PÁGINAS ---
-            elif ("págin" in pergunta or "pp" in pergunta) and num:
-                cond = (lambda x: x >= num) if "mais" in pergunta or "maior" in pergunta else (lambda x: x <= num)
-                res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if cond(d['páginas'])]
-                st.write("Resultados encontrados:")
+            # --- 1. NOVA REGRA: LISTAR LIVROS DE AUTOR ---
+            autores_na_base = list(set([d['autor'].lower() for d in livros.values()]))
+            autor_detectado = next((a for a in autores_na_base if a in pergunta), None)
+            
+            if ("livro" in pergunta or "quais" in pergunta or "todos" in pergunta) and autor_detectado:
+                res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['autor'].lower() == autor_detectado]
+                st.write(f"Aqui estão os livros de **{autor_detectado.title()}** no catálogo:")
                 for r in res: st.write(r)
                 respondido = True
 
-            # --- 3. PESQUISA UNIVERSAL (PARA TUDO O RESTO) ---
+            # --- 2. LÓGICA DE TIRAGEM (Mantida) ---
+            elif "tiragem" in pergunta and num:
+                if "inferior" in pergunta or "menos" in pergunta:
+                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] <= num]
+                else:
+                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] >= num]
+                
+                st.write(f"Resultados de tiragem encontrados:")
+                for t, d in resultados: st.write(f"📖 **{t}** — {d['tiragem']:,} ex.")
+                respondido = True
+
+            # --- 3. PESQUISA GERAL (Expandida) ---
             if not respondido:
                 found = []
                 for t, d in livros.items():
-                    texto_livro = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
-                    if fuzz.partial_ratio(pergunta, texto_livro) > 85 or pergunta in texto_livro:
+                    texto_total = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
+                    if fuzz.partial_ratio(pergunta, texto_total) > 80:
                         found.append((t, d))
                 
                 if found:
@@ -100,12 +99,11 @@ def main():
                         c1.metric("Autor", d['autor'])
                         c2.metric("Ano", d['ano'])
                         c3.metric("Páginas", d['páginas'])
-                        st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,}")
                         st.divider()
                     respondido = True
 
             if not respondido:
-                st.warning("Não encontrei resultados exatos. Tente mudar os termos da pesquisa.")
+                st.warning("Não encontrei resultados. Tente perguntar: 'Quais os livros de Saramago?'")
 
     st.markdown("""<div class="custom-footer">© 2024 Bertrand Editora | Inteligência Editorial<br><span style="color: #888; font-size: 0.85em;">Assistente Inteligente de Gestão Editorial - Análise Completa.</span></div>""", unsafe_allow_html=True)
 
