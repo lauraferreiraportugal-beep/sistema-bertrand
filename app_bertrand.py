@@ -50,7 +50,7 @@ def main():
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    p = st.chat_input("Pergunte por autores, tiragens ou páginas...")
+    p = st.chat_input("Pergunte por autores, géneros ou estatísticas...")
 
     if p:
         with st.chat_message("user"):
@@ -63,28 +63,43 @@ def main():
         with st.chat_message("assistant"):
             respondido = False
             
-            # --- 1. NOVA REGRA: LISTAR LIVROS DE AUTOR ---
-            autores_na_base = list(set([d['autor'].lower() for d in livros.values()]))
-            autor_detectado = next((a for a in autores_na_base if a in pergunta), None)
+            # --- 1. BUSCA POR GÉNERO (ADICIONADO AGORA) ---
+            generos_na_base = list(set([d['género'].lower() for d in livros.values()]))
+            genero_detectado = next((g for g in generos_na_base if g in pergunta), None)
             
-            if ("livro" in pergunta or "quais" in pergunta or "todos" in pergunta) and autor_detectado:
-                res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['autor'].lower() == autor_detectado]
-                st.write(f"Aqui estão os livros de **{autor_detectado.title()}** no catálogo:")
-                for r in res: st.write(r)
-                respondido = True
+            # Se não encontrou o género exato, tenta ver se a palavra "romance" ou "ficção" está lá
+            if not genero_detectado:
+                if "romance" in pergunta: genero_detectado = "romance"
+                if "ficção" in pergunta: genero_detectado = "ficção"
 
-            # --- 2. LÓGICA DE TIRAGEM (Mantida) ---
-            elif "tiragem" in pergunta and num:
-                if "inferior" in pergunta or "menos" in pergunta:
-                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] <= num]
-                else:
-                    resultados = [(t, d) for t, d in livros.items() if d['tiragem'] >= num]
+            if ("livro" in pergunta or "quais" in pergunta or "todos" in pergunta) and genero_detectado:
+                res = [f"📖 **{t}** — {d['autor']} ({d['ano']})" for t, d in livros.items() if genero_detectado in d['género'].lower()]
+                if res:
+                    st.write(f"Aqui estão os títulos de **{genero_detectado.title()}** no catálogo:")
+                    for r in res: st.write(r)
+                    respondido = True
+
+            # --- 2. BUSCA POR AUTOR (MANTIDO) ---
+            if not respondido:
+                autores_na_base = list(set([d['autor'].lower() for d in livros.values()]))
+                autor_detectado = next((a for a in autores_na_base if a in pergunta), None)
                 
-                st.write(f"Resultados de tiragem encontrados:")
-                for t, d in resultados: st.write(f"📖 **{t}** — {d['tiragem']:,} ex.")
-                respondido = True
+                if ("livro" in pergunta or "quais" in pergunta) and autor_detectado:
+                    res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['autor'].lower() == autor_detectado]
+                    st.write(f"Livros de **{autor_detectado.title()}**:")
+                    for r in res: st.write(r)
+                    respondido = True
 
-            # --- 3. PESQUISA GERAL (Expandida) ---
+            # --- 3. LÓGICA DE TIRAGEM E PÁGINAS (MANTIDO) ---
+            if not respondido and num:
+                if "tiragem" in pergunta:
+                    op = (lambda x: x <= num) if "inferior" in pergunta or "menos" in pergunta else (lambda x: x >= num)
+                    resultados = [(t, d) for t, d in livros.items() if op(d['tiragem'])]
+                    st.write("Resultados de tiragem:")
+                    for t, d in resultados: st.write(f"📖 **{t}** — {d['tiragem']:,} ex.")
+                    respondido = True
+
+            # --- 4. PESQUISA GERAL (MANTIDO) ---
             if not respondido:
                 found = []
                 for t, d in livros.items():
@@ -103,7 +118,7 @@ def main():
                     respondido = True
 
             if not respondido:
-                st.warning("Não encontrei resultados. Tente perguntar: 'Quais os livros de Saramago?'")
+                st.warning("Não encontrei resultados. Tente perguntar por um autor, género (Romance, Ficção, Clássico) ou tiragem.")
 
     st.markdown("""<div class="custom-footer">© 2024 Bertrand Editora | Inteligência Editorial<br><span style="color: #888; font-size: 0.85em;">Assistente Inteligente de Gestão Editorial - Análise Completa.</span></div>""", unsafe_allow_html=True)
 
