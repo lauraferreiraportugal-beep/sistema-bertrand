@@ -1,30 +1,81 @@
+Com certeza. Vamos ajustar o layout para que a interface fique mais equilibrada, com o chat focado no centro, e organizar o rodapé conforme pediste, utilizando cores contrastantes para a legenda.
+
+Aqui tens o código completo e atualizado:
+
+Python
 import streamlit as st
 from thefuzz import fuzz
 from collections import Counter
 
 # 1. Configuração e Estilo Bertrand
-st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="wide")
+st.set_page_config(page_title="Bertrand Editorial AI", page_icon="📖", layout="centered") # Layout 'centered' foca o chat no meio
+
 st.markdown("""
     <style>
+    /* Fundo e Cores Globais */
     .stApp { background-color: #ffffff; }
-    [data-testid="stSidebar"] { background-color: #002e5d; color: white; }
-    div[data-testid="stMetric"] { background-color: #f8f9fa; border-left: 5px solid #002e5d; padding: 15px; border-radius: 5px; }
-    h1, h2, h3 { color: #002e5d !important; font-family: 'Georgia', serif; }
-    .stChatMessage { border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px; }
+    
+    /* Barra Lateral */
+    [data-testid="stSidebar"] { 
+        background-color: #002e5d; 
+        color: white; 
+    }
+    
+    /* Estilo das Métricas */
+    div[data-testid="stMetric"] { 
+        background-color: #f8f9fa; 
+        border-left: 5px solid #002e5d; 
+        padding: 15px; 
+        border-radius: 5px; 
+    }
+    
+    /* Tipografia */
+    h1, h2, h3 { 
+        color: #002e5d !important; 
+        font-family: 'Georgia', serif; 
+        text-align: center;
+    }
+    
+    /* Estilo das mensagens do Chat */
+    .stChatMessage { 
+        border: 1px solid #e0e0e0; 
+        border-radius: 10px; 
+        padding: 10px; 
+    }
+
+    /* Estilização do Rodapé */
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: white;
+        color: #1e1e1e;
+        text-align: center;
+        padding: 10px;
+        border-top: 1px solid #e0e0e0;
+    }
+    .footer-light {
+        color: #888888;
+        font-size: 0.85em;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
+    # Sidebar
     try:
         st.sidebar.image("logo.png", width=200)
     except:
         st.sidebar.title("Bertrand")
     
     st.sidebar.markdown("---")
-    st.sidebar.info("Assistente Inteligente de Gestão Editorial - Análise Completa.")
+    st.sidebar.write("📌 **Projeto de Estágio**")
 
+    # Título Principal Centralizado
     st.title("SISTEMA DE GESTÃO EDITORIAL")
-    
+    st.write("") 
+
     # Base de Dados
     livros = {
         "O Memorial do Convento": {"autor": "José Saramago", "páginas": 448, "ano": 1982, "tiragem": 50000, "género": "Romance Histórico"},
@@ -49,7 +100,8 @@ def main():
         "As Intermitências da Morte": {"autor": "José Saramago", "páginas": 208, "ano": 2005, "tiragem": 70000, "género": "Ficção"}
     }
 
-    p = st.chat_input("Pergunte qualquer coisa (ex: 'livros de Saramago', 'mais de 300 páginas', 'tiragem total'...)")
+    # Caixa de Chat
+    p = st.chat_input("Diga-me o que procura no catálogo...")
 
     if p:
         with st.chat_message("user"):
@@ -62,24 +114,21 @@ def main():
 
         with st.chat_message("assistant"):
             
-            # 1. LÓGICA DE TIRAGENS TOTAIS/MÉDIAS
+            # A) TIRAGEM TOTAL / MÉDIAS
             if "tiragem" in pergunta or "impressões" in pergunta:
                 if "total" in pergunta or "todos" in pergunta:
                     total = sum(d['tiragem'] for d in livros.values())
-                    st.write(f"A tiragem total do catálogo é de **{total:,} exemplares**.")
+                    st.write(f"A tiragem total acumulada é de **{total:,} exemplares**.")
                     respondido = True
                 else:
-                    # Tenta encontrar se o utilizador falou de um autor ou género
                     alvo = next((v for v in ["saramago", "pessoa", "eça", "queirós", "ficção", "romance", "clássico", "biografia"] if v in pergunta), None)
                     res = [d['tiragem'] for t, d in livros.items() if alvo and (alvo in d['autor'].lower() or alvo in d['género'].lower())]
                     if res:
-                        st.write(f"A tiragem total para essa pesquisa é de **{sum(res):,} exemplares**.")
-                        st.write(f"Média por livro: **{int(sum(res)/len(res)):,}**.")
+                        st.write(f"Tiragem para a categoria: **{sum(res):,} ex.** | Média: **{int(sum(res)/len(res)):,} ex.**")
                         respondido = True
 
-            # 2. LÓGICA DE FILTROS NUMÉRICOS (Páginas e Anos)
+            # B) FILTROS NUMÉRICOS (PÁGINAS E ANOS)
             if not respondido and num:
-                # Páginas
                 if "págin" in pergunta or "pagin" in pergunta or "pp" in pergunta:
                     if "mais" in pergunta or "maior" in pergunta or "acima" in pergunta:
                         res = [f"📖 **{t}** ({d['páginas']} pp.)" for t, d in livros.items() if d['páginas'] > num]
@@ -89,58 +138,46 @@ def main():
                         st.write(f"Livros com menos de {num} páginas:")
                     for r in res: st.write(r)
                     respondido = True
-                # Anos
+                
                 elif "ano" in pergunta or "lançado" in pergunta:
                     if "depois" in pergunta or "após" in pergunta or "recente" in pergunta:
                         res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] > num]
-                        st.write(f"Livros lançados depois de {num}:")
+                        st.write(f"Lançados depois de {num}:")
                     else:
                         res = [f"📖 **{t}** ({d['ano']})" for t, d in livros.items() if d['ano'] < num]
-                        st.write(f"Livros lançados antes de {num}:")
+                        st.write(f"Lançados antes de {num}:")
                     for r in res: st.write(r)
                     respondido = True
 
-            # 3. LÓGICA DE CONTAGEM E LISTAGEM
+            # C) LISTAGEM E PESQUISA UNIVERSAL
             if not respondido:
-                if "lista" in pergunta or "quais" in pergunta or "diz me" in pergunta or "mostra" in pergunta or "todos" in pergunta:
-                    # Procura por Autor ou Género na pergunta
-                    resultados = []
-                    for t, d in livros.items():
-                        # Super busca: título, autor ou género
-                        if fuzz.partial_ratio(pergunta, t.lower()) > 80 or \
-                           fuzz.partial_ratio(pergunta, d['autor'].lower()) > 80 or \
-                           fuzz.partial_ratio(pergunta, d['género'].lower()) > 80:
-                            resultados.append((t, d))
-                    
-                    if resultados:
-                        st.write(f"Encontrei {len(resultados)} resultados:")
-                        for t, d in resultados:
-                            with st.expander(f"📖 {t} ({d['autor']})"):
-                                c1, c2 = st.columns(2)
-                                c1.metric("Páginas", d['páginas'])
-                                c1.metric("Ano", d['ano'])
-                                c2.metric("Tiragem", f"{d['tiragem']:,}")
-                                c2.write(f"**Género:** {d['género']}")
-                        respondido = True
-
-            # 4. BUSCA UNITÁRIA (Fuzzy Matching para tudo o resto)
-            if not respondido:
-                # Se escreveu apenas um nome (ex: "Saramago")
+                resultados = []
                 for t, d in livros.items():
-                    if fuzz.partial_ratio(pergunta, t.lower()) > 85 or fuzz.partial_ratio(pergunta, d['autor'].lower()) > 85:
-                        st.subheader(t)
-                        col1, col2, col3 = st.columns(3)
-                        col1.metric("Autor", d['autor'])
-                        col2.metric("Páginas", d['páginas'])
-                        col3.metric("Ano", d['ano'])
-                        st.write(f"**Tiragem:** {d['tiragem']:,} exemplares | **Género:** {d['género']}")
-                        respondido = True
-                        break
+                    conhecimento = f"{t} {d['autor']} {d['género']} {d['ano']}".lower()
+                    if fuzz.partial_ratio(pergunta, conhecimento) > 80 or pergunta in conhecimento:
+                        resultados.append((t, d))
+                
+                if resultados:
+                    for t, d in resultados:
+                        st.write(f"### {t}")
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Autor", d['autor'])
+                        c2.metric("Ano", d['ano'])
+                        c3.metric("Páginas", d['páginas'])
+                        st.write(f"**Tiragem:** {d['tiragem']:,} ex | **Género:** {d['género']}")
+                        st.divider()
+                    respondido = True
 
             if not respondido:
-                st.warning("Não consegui encontrar dados para essa pergunta. Tente pesquisar por autor, género, páginas ou tiragem.")
+                st.warning("Informação não localizada. Tente pesquisar por autor, género ou intervalo de páginas.")
 
-    st.markdown("<br><hr><center>© 2024 Bertrand Editora | Inteligência Editorial</center>", unsafe_allow_html=True)
+    # RODAPÉ FIXO E ESTILIZADO
+    st.markdown("""
+        <div class="footer">
+            © 2024 Bertrand Editora | Inteligência Editorial<br>
+            <span class="footer-light">Assistente Inteligente de Gestão Editorial - Análise Completa.</span>
+        </div>
+        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
