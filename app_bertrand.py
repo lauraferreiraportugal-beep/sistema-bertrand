@@ -63,7 +63,7 @@ def main():
         st.divider()
         st.header(f"📖 {livro_escolhido}")
 
-        # Organização em colunas para ficar visualmente bonito
+        # Organização em colunas
         col1, col2 = st.columns(2)
         dados = livros[livro_escolhido]
 
@@ -72,11 +72,11 @@ def main():
             st.markdown(f"**🏷️ Género:** {dados['genero']}")
             st.markdown(f"**📅 Ano de Lançamento:** {dados['ano']}")
 
-      with col2:
+        with col2:
             st.markdown(f"**📄 Número de Páginas:** {dados['paginas']}")
             st.markdown(f"**📈 Tiragem Registada:** {dados['tiragem']} exemplares")
 
-        st.success("Dados carregados com sucesso.")
+        st.success("Dados carregados com sucesso do catálogo Bertrand.")
 
 if __name__ == "__main__":
     main()
