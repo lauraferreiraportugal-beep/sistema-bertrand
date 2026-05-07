@@ -28,19 +28,25 @@ st.markdown("""
         margin-bottom: 30px !important; 
     }
     
-    /* RODAPÉ REFINADO E CENTRADO */
+    /* RODAPÉ ALINHADO COM O TÍTULO (COMPENSANDO A SIDEBAR) */
     .custom-footer { 
         position: fixed; 
         left: 0; 
         bottom: 0; 
         width: 100%; 
         text-align: center; 
-        padding: 8px 0; /* Diminuído para o retângulo branco ser menor */
+        padding: 8px 0;
         background-color: white; 
         border-top: 1px solid #e0e0e0; 
         color: #1e1e1e; 
         z-index: 999;
         line-height: 1.2;
+        /* Este ajuste empurra o texto ligeiramente para a direita para alinhar com o título central */
+        padding-left: 250px; 
+    }
+    
+    @media (max-width: 768px) {
+        .custom-footer { padding-left: 0; }
     }
     
     /* AJUSTE PARA O NOME DO AUTOR APARECER COMPLETO */
@@ -157,7 +163,7 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    # RODAPÉ FINO E CENTRADO
+    # RODAPÉ ALINHADO
     st.markdown("""
         <div class="custom-footer">
             <div style="font-size: 0.9em;">© 2026 Bertrand Editora | Inteligência Editorial</div>
