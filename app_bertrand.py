@@ -57,14 +57,14 @@ def main():
         **Funcionalidades:**
         - 🔍 Busca inteligente por Autor e Género.
         - 📈 Consulta de Tiragens individuais.
-        - 📏 Filtros de Páginas (maior/menor).
+        - 📖 Filtros de Páginas (maior/menor).
         - 📅 Filtros de Ano de Publicação.
         - 📋 Listagem completa de catálogo.
         """)
 
     st.title("SISTEMA DE GESTÃO EDITORIAL")
 
-    p = st.chat_input("Diga-me o que procura no catálogo...")
+    p = st.chat_input("Diga-me o que procura...")
 
     if p:
         with st.chat_message("user"):
@@ -132,7 +132,7 @@ def main():
                         st.write(f"**Género:** {d['género']} | **Tiragem:** {d['tiragem']:,} ex.")
                         st.divider()
 
-    st.markdown("""<div class="custom-footer">© 2024 Bertrand Editora | Inteligência Editorial<br><span style="color: #888; font-size: 0.85em;">Assistente Inteligente de Gestão Editorial - Análise Completa.</span></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="custom-footer">© 2026 Bertrand Editora | Inteligência Editorial<br><span style="color: #888; font-size: 0.85em;">Assistente Inteligente.</span></div>""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
